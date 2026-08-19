@@ -1,0 +1,298 @@
+{
+  "schema": {
+    "schemaVersion": 2,
+    "sequences": {
+      "com.tldraw.store": 5,
+      "com.tldraw.asset": 1,
+      "com.tldraw.camera": 1,
+      "com.tldraw.document": 2,
+      "com.tldraw.instance": 26,
+      "com.tldraw.instance_page_state": 5,
+      "com.tldraw.page": 1,
+      "com.tldraw.instance_presence": 6,
+      "com.tldraw.pointer": 1,
+      "com.tldraw.shape": 4,
+      "com.tldraw.user": 1,
+      "com.tldraw.asset.image": 6,
+      "com.tldraw.asset.video": 5,
+      "com.tldraw.asset.bookmark": 2,
+      "com.tldraw.shape.arrow": 8,
+      "com.tldraw.shape.bookmark": 2,
+      "com.tldraw.shape.draw": 4,
+      "com.tldraw.shape.embed": 4,
+      "com.tldraw.shape.frame": 1,
+      "com.tldraw.shape.geo": 11,
+      "com.tldraw.shape.group": 0,
+      "com.tldraw.shape.highlight": 3,
+      "com.tldraw.shape.image": 5,
+      "com.tldraw.shape.line": 5,
+      "com.tldraw.shape.note": 12,
+      "com.tldraw.shape.text": 4,
+      "com.tldraw.shape.video": 4,
+      "com.tldraw.binding.arrow": 1
+    }
+  },
+  "store": {
+    "shape:_jF40rAy8Y1-MY-x2t-IB": {
+      "x": 892.2500507503778,
+      "y": 414.882401256515,
+      "rotation": 0,
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "id": "shape:_jF40rAy8Y1-MY-x2t-IB",
+      "type": "text",
+      "props": {
+        "color": "black",
+        "size": "m",
+        "w": 164.2803235715637,
+        "font": "draw",
+        "textAlign": "start",
+        "autoSize": false,
+        "scale": 1,
+        "richText": {
+          "type": "doc",
+          "attrs": {
+            "dir": "auto"
+          },
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "dir": "auto"
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "时间"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "parentId": "page:page",
+      "index": "a3N7pCHV",
+      "typeName": "shape"
+    },
+    "user:dZQzTQ3TRiwZdyVN3ci98": {
+      "name": "",
+      "color": "#02B1CC",
+      "imageUrl": "",
+      "meta": {},
+      "id": "user:dZQzTQ3TRiwZdyVN3ci98",
+      "typeName": "user"
+    },
+    "asset:sports-poster-20260804": {
+      "id": "asset:sports-poster-20260804",
+      "typeName": "asset",
+      "type": "image",
+      "props": {
+        "name": "sports-poster-20260804.png",
+        "src": "/page-assets/page/sports-poster-20260804.png",
+        "w": 1086,
+        "h": 1448,
+        "fileSize": 2391732,
+        "mimeType": "image/png",
+        "isAnimated": false
+      },
+      "meta": {}
+    },
+    "shape:YEszPZMZZujx32fQ2KB70": {
+      "x": 623.7672317318477,
+      "y": -180.09572450471433,
+      "rotation": 0,
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "id": "shape:YEszPZMZZujx32fQ2KB70",
+      "type": "arrow",
+      "props": {
+        "kind": "arc",
+        "elbowMidPoint": 0.5,
+        "dash": "draw",
+        "size": "m",
+        "fill": "none",
+        "color": "black",
+        "labelColor": "black",
+        "bend": 0,
+        "start": {
+          "x": 0,
+          "y": 0
+        },
+        "end": {
+          "x": 44.31513079071317,
+          "y": 50.118736529546254
+        },
+        "arrowheadStart": "none",
+        "arrowheadEnd": "arrow",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph"
+            }
+          ]
+        },
+        "labelPosition": 0.5,
+        "font": "draw",
+        "scale": 1
+      },
+      "parentId": "page:page",
+      "index": "a1pmTDAG",
+      "typeName": "shape"
+    },
+    "shape:-xcGlWdTGrLV9ew3jD4rF": {
+      "x": 625.894613113351,
+      "y": 103.00464639173356,
+      "rotation": 0,
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "id": "shape:-xcGlWdTGrLV9ew3jD4rF",
+      "type": "text",
+      "props": {
+        "color": "black",
+        "size": "m",
+        "w": 136.07890790080228,
+        "font": "draw",
+        "textAlign": "start",
+        "autoSize": false,
+        "scale": 1,
+        "richText": {
+          "type": "doc",
+          "attrs": {
+            "dir": "auto"
+          },
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "dir": "auto"
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "太科幻了 要写实"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "parentId": "page:page",
+      "index": "a4YGUKbG",
+      "typeName": "shape"
+    },
+    "shape:Fk9HR6iOFYcXbAaX6fuml": {
+      "x": 576.6231847999923,
+      "y": -221.02697041277065,
+      "rotation": 0,
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "id": "shape:Fk9HR6iOFYcXbAaX6fuml",
+      "type": "text",
+      "props": {
+        "color": "black",
+        "size": "m",
+        "w": 176.6747708338114,
+        "font": "draw",
+        "textAlign": "start",
+        "autoSize": false,
+        "scale": 1,
+        "richText": {
+          "type": "doc",
+          "attrs": {
+            "dir": "auto"
+          },
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "dir": "auto"
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "要写文字"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "parentId": "page:page",
+      "index": "a2myO4MV",
+      "typeName": "shape"
+    },
+    "binding:g8vHv8AhiSJa7ixmKNVp5": {
+      "meta": {},
+      "id": "binding:g8vHv8AhiSJa7ixmKNVp5",
+      "type": "arrow",
+      "fromId": "shape:YEszPZMZZujx32fQ2KB70",
+      "toId": "shape:sports-poster-20260804",
+      "props": {
+        "isPrecise": true,
+        "isExact": false,
+        "normalizedAnchor": {
+          "x": 0.1681560679298746,
+          "y": 0.1276665084784399
+        },
+        "snap": "none",
+        "terminal": "end"
+      },
+      "typeName": "binding"
+    },
+    "user:dPt3f-voolZTLBrgygjiA": {
+      "name": "",
+      "color": "#7B66DC",
+      "imageUrl": "",
+      "meta": {},
+      "id": "user:dPt3f-voolZTLBrgygjiA",
+      "typeName": "user"
+    },
+    "shape:sports-poster-20260804": {
+      "x": 582.4602194762474,
+      "y": -156.536010762326,
+      "rotation": 0,
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {
+        "cowartAnnotationSourceShapeId": "shape:fo-ygGkRIJfrd6S6kbtbg",
+        "cowartGeneratedForAiImageHolder": "shape:fo-ygGkRIJfrd6S6kbtbg",
+        "cowartReplacedAiImageHolder": true
+      },
+      "id": "shape:sports-poster-20260804",
+      "type": "image",
+      "props": {
+        "w": 512,
+        "h": 683,
+        "assetId": "asset:sports-poster-20260804",
+        "playing": true,
+        "url": "",
+        "flipX": false,
+        "flipY": false,
+        "altText": "充满速度感与力量感的竖版运动海报，冲刺运动员置于冷蓝与橙红光迹之中",
+        "crop": null
+      },
+      "parentId": "page:page",
+      "index": "a1IhplpV",
+      "typeName": "shape"
+    },
+    "page:page": {
+      "meta": {},
+      "id": "page:page",
+      "name": "Page 1",
+      "index": "a1",
+      "typeName": "page"
+    },
+    "document:document": {
+      "gridSize": 10,
+      "name": "",
+      "meta": {},
+      "id": "document:document",
+      "typeName": "document"
+    }
+  }
+}

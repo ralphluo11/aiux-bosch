@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1024,height=576,initial-scale=1">
+<title>Jingshi Intelligent — Investment Overview</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:1024px;height:576px;overflow:hidden;background:#fff;font-family:Arial,"Helvetica Neue",sans-serif;color:#111}
+:root{--blue:#087dbb;--deep:#00557d;--line:#d9dde0;--muted:#656c72;--pale:#eaf4ff;--green:#138a43}
+.top-spectrum{height:5px;background:linear-gradient(90deg,#a51d2d 0 8%,#e30713 24%,#41387f 39%,#123d7a 56%,#04a9cf 74%,#008b47 88%,#66a744)}
+.page{height:571px;padding:18px 28px 14px;display:grid;grid-template-rows:76px 40px 1fr 30px;gap:9px}
+header{display:grid;grid-template-columns:1.05fr 1fr .78fr;align-items:start;border-bottom:2px solid #111;padding-bottom:10px}
+.eyebrow{font-size:7px;letter-spacing:2px;color:#626b72;font-weight:700;margin-bottom:8px}
+h1{font-size:27px;line-height:.95;margin:0 0 8px;font-weight:800;letter-spacing:.2px}.subtitle{font-size:13px;color:#62686d}
+.descriptor{font-size:12px;font-weight:800;line-height:1.25;padding-top:20px}
+.score{display:flex;justify-content:flex-end;align-items:center;gap:15px;padding-top:13px}.grade{background:#e4f5e9;color:var(--green);font-weight:800;font-size:8px;padding:7px 17px}.num{font-size:25px;font-weight:800}.num small{font-size:8px;color:#697078}.proceed{background:var(--blue);color:#fff;font-size:9px;font-weight:800;padding:8px 18px}
+.transaction{display:grid;grid-template-columns:84px 62px 172px 1fr;align-items:center;border-bottom:1px solid var(--line);padding-bottom:8px}
+.section-label{font-size:8px;letter-spacing:1.8px;font-weight:800;color:var(--blue)}.pill{background:var(--pale);padding:7px 10px;text-align:center;font-size:8px;font-weight:800;color:#0c4d72}.deal{display:flex;justify-content:space-around;font-size:8px;color:#747b80}.deal b{color:#111;font-size:11px;margin-left:8px}.deal .run{color:var(--green);font-weight:800}
+.main{display:grid;grid-template-columns:220px 1fr 290px;gap:28px;min-height:0}
+.col-title{font-size:8px;letter-spacing:1.8px;font-weight:800;color:var(--blue);margin:2px 0 10px}
+.robot-card{height:132px;background:linear-gradient(155deg,#f8fafb,#eef2f4);position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.robot{position:relative;width:110px;height:115px}.base{position:absolute;bottom:8px;left:10px;width:90px;height:26px;background:#39444a;border-radius:5px 5px 11px 11px;box-shadow:inset 0 5px #eef1f2}.base:after{content:"";position:absolute;left:38px;top:7px;width:14px;height:14px;border-radius:50%;background:#20282c;box-shadow:-27px 9px 0 -4px #111,27px 9px 0 -4px #111}.tower{position:absolute;bottom:32px;left:34px;width:43px;height:35px;background:white;border:1px solid #c8d1d6}.tower:after{content:"V";position:absolute;font-size:20px;font-weight:800;color:#b3bec4;left:12px;top:6px}.arm1,.arm2{position:absolute;height:12px;background:#e9eef1;border:1px solid #bfc9cf;border-radius:8px;transform-origin:left center}.arm1{width:58px;left:54px;top:37px;transform:rotate(-54deg)}.arm2{width:47px;left:83px;top:1px;transform:rotate(28deg)}.joint{position:absolute;width:17px;height:17px;border-radius:50%;background:#f6f8f9;border:2px solid #b7c3ca;left:48px;top:38px}.grip{position:absolute;left:119px;top:25px;width:8px;height:25px;border:3px solid #9caab2;border-top:0}
+.product-name{font-size:11px;font-weight:800;margin:8px 0 5px}.small{font-size:8px;line-height:1.25;color:var(--muted)}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;border-top:1px solid var(--line);margin-top:14px;padding-top:12px}.metric b{display:block;font-size:18px}.metric span{font-size:7px;color:#687076}.founder{font-size:9px;font-weight:800;margin:12px 0 5px}
+.evidence{display:grid;grid-template-rows:repeat(4,1fr);height:325px}.ev{display:grid;grid-template-columns:28px 1fr;border-bottom:1px solid var(--line);padding:9px 0}.ev:last-child{border-bottom:0}.idx{font-size:8px;color:var(--blue);font-weight:800}.ev h3{font-size:11px;margin:0 0 5px}.ev p{font-size:8px;line-height:1.23;color:#646b70;margin:0}
+.exchange{margin-bottom:15px}.row{display:grid;grid-template-columns:85px 1fr;border-bottom:1px solid var(--line);padding:8px 0}.row .k{font-size:7px;letter-spacing:1.2px;color:#767c81;font-weight:800}.row .v{font-size:8px;line-height:1.2;font-weight:700}
+.bars{display:grid;gap:7px}.bar{display:grid;grid-template-columns:110px 1fr 24px;align-items:center;gap:9px;font-size:7px;color:#687076}.track{height:6px;background:#dfe3e6}.fill{height:100%;background:var(--blue)}.val{text-align:right;font-weight:800;color:#111}
+.thesis{grid-column:2/4;align-self:end;display:grid;grid-template-columns:105px 1fr;gap:0;border-top:1px solid var(--line);padding-top:8px}.thesis b{font-size:10px}.thesis small{display:block;color:#687076;font-size:7px;margin-top:4px}
+footer{background:var(--deep);color:#fff;display:grid;grid-template-columns:82px repeat(3,1fr) 110px;align-items:center;padding:0 16px;font-size:8px;font-weight:800}.step{border-left:1px solid rgba(255,255,255,.3);padding-left:14px}.brand{text-align:right}
+</style>
+</head>
+<body>
+<div class="top-spectrum"></div>
+<div class="page">
+<header>
+<div><div class="eyebrow">P1-0192 · INVESTMENT SNAPSHOT</div><h1>Jingshi Intelligent</h1><div class="subtitle">Mobile Manipulation Robot (MMR)</div></div>
+<div class="descriptor">Industrial “last mile” cross-industry<br>general-purpose robot platform</div>
+<div class="score"><span class="grade">GRADE A</span><span class="num">4.17 <small>/ 5.0</small></span><span class="proceed">PROCEED</span></div>
+</header>
+
+<section class="transaction">
+<div class="section-label">TRANSACTION</div><div class="pill">PRE-A</div><div class="pill"> 记得我i简单饭店发生的</div>
+<div class="deal"><span>Raise <b>¥但是速度</b></span><span>Pre-money <b>¥150–240M</b></span><span>Dilution <b>TBD</b></span><span>Tech risk <b>MEDIUM</b></span><span class="run">36-month runway</span></div>
+</section>
+
+<section class="main">
+<div>
+<div class="col-title">PRODUCT &amp; COMPANY</div>
+<div class="robot-card"><div class="robot"><div class="base"></div><div class="tower"></div><div class="arm1"></div><div class="joint"></div><div class="arm2"></div><div class="grip"></div></div></div>
+<div class="product-name">AGV + robotic arm integration</div>
+<div class="small">Routine manufacturing tasks; digital-twin planning creates deployment stickiness.</div>
+<div class="metrics"><div class="metric"><b>65</b><span>Full-time employees</span></div><div class="metric"><b>40</b><span>R&amp;D · 61.5%</span></div><div class="metric"><b>5·5·15</b><span>Product / sales / ops</span></div></div>
+<div class="founder">CEO Qin Lifu</div><div class="small">Ex-Jereh R&amp;D and Europe/Russia product director. Founders from Shandong Energy, eHailan, Jierei Digital and industrial services.</div>
+</div>
+
+<div>
+<div class="col-title">INVESTMENT EVIDENCE</div>
+<div class="evidence">
+<div class="ev"><div class="idx">01</div><div><h3>Commercial proof</h3><p>¥30M annual revenue · 150 paying customers · ¥5.5M largest contract<br>Integrated solution + standard robot + commissioning service</p></div></div>
+<div class="ev"><div class="idx">02</div><div><h3>Channels &amp; benchmarks</h3><p>25+ provinces + Thailand + Vietnam<br>ZF: 1-to-4 grinding, 140s fastest cycle · GoerTek: 1 robot serving 40+ CNC</p></div></div>
+<div class="ev"><div class="idx">03</div><div><h3>Technology moat</h3><p>Digital-twin platform · 150 customer scenario packages · TRL 7–9<br>10 patents filed / 1 granted · 119 software copyrights · “last mile” first-mover</p></div></div>
+<div class="ev"><div class="idx">04</div><div><h3>Why this team / why now</h3><p>Full R&amp;D-to-market founder chain · Taishan leading-talent recognition<br>Cross-industry platform vs single-industry depth; no monopoly player today</p></div></div>
+</div>
+</div>
+
+<div>
+<div class="col-title">BOSCH VALUE EXCHANGE</div>
+<div class="exchange">
+<div class="row"><div class="k">COMPANY NEEDS</div><div class="v">More use cases · industrial validation · sales scaling</div></div>
+<div class="row"><div class="k">BOSCH ENABLES</div><div class="v">Automotive-parts factories · IMU · force · vision · Active Shuttle</div></div>
+<div class="row"><div class="k">JOINT VALUE</div><div class="v">AGV + arm integration pilot · technology-transfer option · first-mover window</div></div>
+</div>
+<div class="col-title">ASSESSMENT PROFILE</div>
+<div class="bars">
+<div class="bar"><span>Founder &amp; team</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="val">5.0</span></div>
+<div class="bar"><span>Market opportunity</span><div class="track"><div class="fill" style="width:74%"></div></div><span class="val">3.7</span></div>
+<div class="bar"><span>Technology</span><div class="track"><div class="fill" style="width:80%"></div></div><span class="val">4.0</span></div>
+<div class="bar"><span>Business model</span><div class="track"><div class="fill" style="width:80%"></div></div><span class="val">4.0</span></div>
+<div class="bar"><span>Validation</span><div class="track"><div class="fill" style="width:94%"></div></div><span class="val">4.7</span></div>
+<div class="bar"><span>Bosch synergy</span><div class="track"><div class="fill" style="width:74%"></div></div><span class="val">3.7</span></div>
+<div class="bar"><span>Financial</span><div class="track"><div class="fill" style="width:60%"></div></div><span class="val">3.0</span></div>
+<div class="bar"><span>Risk control</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="val">5.0</span></div>
+</div>
+</div>
+<div class="thesis"><div class="section-label">INVESTMENT THESIS</div><div><b>Proven traction + reusable digital-twin assets create a credible platform case.</b><small>Watchpoint: commercial model clarity and supply-chain support.</small></div></div>
+</section>
+
+<footer><span>PROCEED</span><span class="step">1&nbsp; Validate commercial model</span><span class="step">2&nbsp; Establish Rexroth SDM + factory contact</span><span class="step">3&nbsp; Confirm Active Shuttle scope + define pilot</span><span class="brand">Scale sales 5 → 20+</span></footer>
+</div>
+
+</body></html>

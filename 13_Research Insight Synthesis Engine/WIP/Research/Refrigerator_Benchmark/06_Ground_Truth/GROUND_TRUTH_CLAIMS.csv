@@ -1,0 +1,2 @@
+ground_truth_id,statement,claim_type,source_ids,evidence_locator,expected_finding,priority,confidence,owner,status,dispute_notes
+GT-001,TBC,fact,TBC,TBC,TBC,TBC,TBC,TBC,draft,TBC

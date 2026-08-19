@@ -1,0 +1,1769 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Research Insight Synthesis Engine · Product PRD (Alignment &amp; Approval) · Research Insight Synthesis Engine · 产品 PRD（立项与对齐）</title>
+  <style>
+
+    :root {
+      --text: #1a1a1a;
+      --muted: #5c5c5c;
+      --border: #e0e0e0;
+      --code-bg: #f6f8fa;
+      --accent: #0969da;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, "Noto Sans", "PingFang SC", "Microsoft YaHei",
+        sans-serif;
+      color: var(--text);
+      line-height: 1.55;
+      background: #fafafa;
+    }
+    .wrap {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+      background: #fff;
+      min-height: 100vh;
+      box-shadow: 0 0 0 1px var(--border);
+    }
+    @media (min-width: 960px) {
+      .wrap { margin: 1.5rem auto; border-radius: 8px; }
+    }
+    .bilingual-nav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 0.65rem 1.25rem;
+      font-size: 0.95rem;
+      max-width: 920px;
+      margin: 0 auto;
+      box-shadow: 0 0 0 1px var(--border);
+    }
+    @media (min-width: 960px) {
+      .bilingual-nav {
+        border-radius: 8px 8px 0 0;
+        margin-top: 1.5rem;
+        margin-bottom: -1.5rem;
+      }
+    }
+    .bilingual-nav a { color: var(--accent); text-decoration: none; font-weight: 600; }
+    .bilingual-nav a:hover { text-decoration: underline; }
+    .section-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin: 0 0 0.5rem 0;
+      padding-top: 0.5rem;
+    }
+    .lang-divider {
+      border: none;
+      border-top: 2px solid var(--border);
+      margin: 3rem 0;
+    }
+    .prd article h1:first-child, section article h1:first-child { margin-top: 0; }
+    h1 { font-size: 1.75rem; margin-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+    h2 { font-size: 1.35rem; margin-top: 2rem; }
+    h3 { font-size: 1.1rem; margin-top: 1.25rem; }
+    h4, h5, h6 { font-size: 1rem; margin-top: 1rem; }
+    p { margin: 0.65rem 0; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 1.35rem; }
+    li { margin: 0.25rem 0; }
+    blockquote {
+      margin: 1rem 0;
+      padding: 0.25rem 1rem;
+      border-left: 4px solid var(--border);
+      color: var(--muted);
+      background: #fcfcfc;
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.9em;
+      background: var(--code-bg);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+    }
+    pre {
+      background: var(--code-bg);
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+    pre code { background: none; padding: 0; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+      font-size: 0.92rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.45rem 0.65rem;
+      vertical-align: top;
+    }
+    th { background: #f3f4f6; text-align: left; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+  </style>
+</head>
+<body>
+  <div style="max-width:920px;margin:1rem auto 0;padding:1rem 1.25rem;border:2px solid #b54708;background:#fff7ed;color:#7c2d12;font-weight:600;">
+    Scope update 2026-08-11 / 范围更新：本 HTML 为 V2.0 历史快照，不再作为当前范围或验收依据。当前主线为 Project Brief → Source → Evidence → Analysis → Human Review → Structured Delivery。实时 AI 访谈为 Post-MVP TBC。请以 PRD.md、PRD_CN.md 与 V2.0 EXECUTION_PRD 为准。<br />
+    This HTML is a V2.0 historical snapshot and is no longer authoritative for current scope or acceptance. Use PRD.md, PRD_CN.md, and V2.0 EXECUTION_PRD.
+  </div>
+  <nav class="bilingual-nav" aria-label="Language">
+    <a href="#prd-en">English</a>
+    <span aria-hidden="true"> · </span>
+    <a href="#prd-zh">中文</a>
+  </nav>
+  <div class="wrap">
+    <section id="prd-en" lang="en">
+      <p class="section-label">English</p>
+      <article class="prd">
+<h1>Research Insight Synthesis Engine · Product PRD (Alignment &amp; Approval)</h1>
+<p><strong>Product name:</strong> Research Insight Synthesis Engine <strong>Project ID:</strong> 13 (UXGS Internal) <strong>Document role:</strong> <strong>Approval, resourcing, stage decisions</strong> (parent PRD) <strong>Execution doc:</strong> <code>EXECUTION_PRD.md</code> (design / engineering / POC acceptance)</p>
+<blockquote><p><strong>Version:</strong> V2.0｜<strong>Date:</strong> 2026-07-27｜<strong>Status:</strong> Draft — customer definition &amp; POC stage</p></blockquote>
+<hr />
+<h2>01 | Project Overview</h2>
+<table><thead><tr>
+<th>Item</th>
+<th>Content</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Product name</strong></td>
+<td>Research Insight Synthesis Engine</td>
+</tr>
+<tr>
+<td><strong>Product type</strong></td>
+<td>Enterprise AI end-to-end interview product</td>
+</tr>
+<tr>
+<td><strong>Stage</strong></td>
+<td>Customer definition in progress + generic POC; goal is full end-to-end product</td>
+</tr>
+<tr>
+<td><strong>Core flow</strong></td>
+<td><strong>Generate interview outline → share link → real-time adaptive interview → summary report</strong></td>
+</tr>
+<tr>
+<td><strong>Product owners</strong></td>
+<td>TBC (Data lead + UX lead jointly drive customer &amp; data-info collection)</td>
+</tr>
+<tr>
+<td><strong>Audience</strong></td>
+<td>Business Sponsor, Data / UX leads, Eng, pilot stakeholders</td>
+</tr>
+</tbody></table>
+<h3>Near-term milestones (POC per this doc; adjustable post-Kennel)</h3>
+<table><thead><tr>
+<th>Milestone</th>
+<th>Date (approx.)</th>
+<th>Notes</th>
+</tr></thead><tbody>
+<tr>
+<td>Customer definition + data-info collection</td>
+<td><strong>2026-07-31</strong></td>
+<td>Data + UX leads</td>
+</tr>
+<tr>
+<td>Kennel alignment</td>
+<td><strong>2026-07-31</strong></td>
+<td>Schedule anchor</td>
+</tr>
+<tr>
+<td><strong>POC end</strong></td>
+<td><strong>~2026-08-05</strong></td>
+<td><strong>~1.5 weeks</strong></td>
+</tr>
+<tr>
+<td>Phase 1 kickoff</td>
+<td>Post-Kennel</td>
+<td>See roadmap</td>
+</tr>
+</tbody></table>
+<h3>Document set</h3>
+<table><thead><tr>
+<th>Document</th>
+<th>Purpose</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>This PRD</strong></td>
+<td>Approval, alignment, scope &amp; roadmap decisions</td>
+</tr>
+<tr>
+<td><strong>EXECUTION_PRD.md</strong></td>
+<td>Pages, APIs, acceptance, gates, data model</td>
+</tr>
+<tr>
+<td><code>WIP/</code></td>
+<td>POC demo, pilot notes, customer &amp; data collection</td>
+</tr>
+</tbody></table>
+<hr />
+<h2>02 | Background &amp; Objectives</h2>
+<h3>2.1 Problems</h3>
+<ul>
+<li>Outlines depend on individual craft; <strong>expert structures and question banks</strong> are hard to reuse</li>
+<li>Interview, transcription, analysis, and reporting sit in separate tools</li>
+<li>Generic AI can probe dynamically but lacks <strong>product / engineering mechanism</strong> judgment</li>
+<li>Internal, external, and respondent data lack <strong>traceable linkage</strong></li>
+<li>Summaries weakly align to <strong>Bosch context</strong>; external SaaS cannot deeply connect internal data</li>
+</ul>
+<h3>2.2 Product goals</h3>
+<ol>
+<li><strong>End-to-end loop:</strong> outline → live voice interview → summary report in one product.</li>
+<li><strong>Real-time adaptive + human control:</strong> AI adapts questions; interviewer monitors and intervenes.</li>
+<li><strong>Reusable expert structure:</strong> outline generation uses existing <strong>database + expert structures</strong>.</li>
+<li><strong>Dual USP delivery</strong> (see §03): data linkage + mechanism-aware probing.</li>
+<li><strong>Human-in-the-loop:</strong> AI suggests; humans review, edit, override, and trace back.</li>
+</ol>
+<h3>2.3 Product principles</h3>
+<ol>
+<li><strong>End-to-end first</strong> — no broken research chain.</li>
+<li><strong>Human in control</strong> — researchers keep final judgment.</li>
+<li><strong>Knowledge grounded</strong> — knowledge assists questions/summary, never fabricates respondent answers.</li>
+<li><strong>Evidence traceable</strong> — conclusions and enhanced probes trace to sources.</li>
+<li><strong>Neutral by design</strong> — internal hypotheses are not stated as facts to participants.</li>
+<li><strong>Modular outputs</strong> — Guide, Transcript, Evidence, Theme, Insight, Report stored and reusable.</li>
+</ol>
+<h3>2.4 Success criteria (decision level)</h3>
+<p><strong>POC (~1.5 weeks, through ~2026-08-05):</strong></p>
+<ul>
+<li>Generate and publish <strong>interview outline</strong> from DB / expert structure</li>
+<li><strong>Link</strong> invite; <strong>voice</strong> answers; AI <strong>changes next question</strong></li>
+<li>Interviewer <strong>views live</strong> and <strong>intervenes</strong> on next question</li>
+<li><strong>Basic summary report</strong> (template-level; quotes trace to transcript)</li>
+<li><strong>Internal data: Connector contract / stub</strong> only</li>
+<li>(Stretch) Small Knowledge Pack demo for mechanism-aware probes</li>
+</ul>
+<p><strong>Full-product direction:</strong></p>
+<ul>
+<li>Multi-project, permissions, ≥1 real internal data source</li>
+<li>Configurable <strong>Bosch context</strong> for outline and summary</li>
+<li>Knowledge base, cross-project reuse, multi-BU</li>
+</ul>
+<hr />
+<h2>03 | Core Value Proposition (Dual USP)</h2>
+<h3>USP-A | Data layer: internal ↔ external linkage + Bosch context</h3>
+<blockquote><p>Link Bosch internal data with externally collected data; apply <strong>Bosch-context tuning</strong> in <strong>outline generation</strong> and <strong>summary reports</strong> that external tools cannot match.</p></blockquote>
+<table><thead><tr>
+<th>Stage</th>
+<th>Outline</th>
+<th>Summary</th>
+</tr></thead><tbody>
+<tr>
+<td>POC</td>
+<td>Expert structure + DB; Connector <strong>stub</strong></td>
+<td>Basic summary + quote traceability</td>
+</tr>
+<tr>
+<td>Full product</td>
+<td>Internal/external sources in Guide; configurable context rules</td>
+<td>Bosch-context tone, frame, evidence chain</td>
+</tr>
+</tbody></table>
+<h3>USP-B | Probe layer: mechanism-aware depth</h3>
+<blockquote><p>Generic AI knows *how* to probe; our AI knows *why* a probe matters and which <strong>product / design hypothesis</strong> the next question should test.</p></blockquote>
+<pre><code>Engineering / Product Mechanism
+→ User-observable Signal
+→ Candidate Hypothesis
+→ Discriminating Evidence
+→ Neutral Customer-facing Probe</code></pre>
+<table><thead><tr>
+<th>Stage</th>
+<th>Capability</th>
+</tr></thead><tbody>
+<tr>
+<td>POC</td>
+<td>Generic adaptive probe <strong>Must</strong>; Knowledge Pack + mechanism-aware probe <strong>Stretch</strong></td>
+</tr>
+<tr>
+<td>Full product</td>
+<td>Knowledge Cards, RAG, Guardrail, Research Memory systematized</td>
+</tr>
+</tbody></table>
+<p><strong>Non-goals:</strong> “Upload files + plain RAG” alone is not the differentiator; unreviewed AI conclusions are not enterprise facts.</p>
+<hr />
+<h2>04 | Users &amp; Customer</h2>
+<h3>4.1 Customer status</h3>
+<table><thead><tr>
+<th>Item</th>
+<th>Status</th>
+</tr></thead><tbody>
+<tr>
+<td>Pilot customer / Sponsor</td>
+<td><strong>Being defined</strong> — lock + data-info by <strong>2026-07-31</strong></td>
+</tr>
+<tr>
+<td>Owners</td>
+<td>Data + UX leads</td>
+</tr>
+<tr>
+<td>POC strategy</td>
+<td><strong>Generic scenario</strong> until customer is locked</td>
+</tr>
+</tbody></table>
+<h3>4.2 Roles</h3>
+<table><thead><tr>
+<th>Role</th>
+<th>Value</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>UX Researcher / Interviewer</strong></td>
+<td>Create study, review outline, monitor interview, intervene, review report</td>
+</tr>
+<tr>
+<td><strong>Participant</strong></td>
+<td>Join via link, answer by voice, experience adaptive next questions</td>
+</tr>
+<tr>
+<td><strong>Product / Engineering Expert</strong></td>
+<td>Review Knowledge Cards, mechanisms, hypotheses (full product / POC stretch)</td>
+</tr>
+<tr>
+<td><strong>Data / Knowledge Owner</strong></td>
+<td>Sources, permissions, sync (Phase 1+)</td>
+</tr>
+<tr>
+<td><strong>Business Reader</strong></td>
+<td>Consume summaries and evidence</td>
+</tr>
+<tr>
+<td><strong>System Admin</strong></td>
+<td>Workspace, roles, compliance (Phase 2)</td>
+</tr>
+</tbody></table>
+<hr />
+<h2>05 | End-to-end experience</h2>
+<pre><code>Create study → import goals &amp; knowledge scope → generate &amp; review Interview Guide
+→ invite participant → real-time adaptive voice interview → researcher monitor &amp; intervene
+→ Evidence / Theme / Insight analysis → review &amp; report → research asset retention (full product)</code></pre>
+<h3>5.1 Interview outline</h3>
+<p>Structured guide created on-site (not a fill-in survey); supported by <strong>database + expert structures</strong>; output: participant link.</p>
+<h3>5.2 Real-time adaptive interview</h3>
+<p>Voice input · AI adaptation · interviewer observe &amp; intervene · simplified consent / device check (POC).</p>
+<h3>5.3 Summary report</h3>
+<p>POC: single-session themes, key points, quotes, basic export. Full product: evidence chain, Bosch context, multi-session aggregation, template library.</p>
+<h3>5.4 Evidence chain (full-product target)</h3>
+<pre><code>Interview Turn → Transcript → Evidence → Theme → Insight → Report</code></pre>
+<hr />
+<h2>06 | Scope &amp; Roadmap</h2>
+<h3>6.1 POC (~1.5 weeks, through ~2026-08-05) — <strong>authoritative</strong></h3>
+<table><thead><tr>
+<th>In scope</th>
+<th>Out of scope</th>
+</tr></thead><tbody>
+<tr>
+<td>Single Study: outline (DB + expert structure)</td>
+<td>Production internal DB connection</td>
+</tr>
+<tr>
+<td>Link, voice, AI adaptation, interviewer intervene</td>
+<td>Multi-project / multi-BU</td>
+</tr>
+<tr>
+<td>Single-session basic Summary + quote trace</td>
+<td>Full Insight Pipeline / Research Memory</td>
+</tr>
+<tr>
+<td>Connector <strong>contract / stub</strong></td>
+<td>SSO / RBAC / audit</td>
+</tr>
+<tr>
+<td>Generic adaptive probe</td>
+<td>Full-duplex Voice Agent</td>
+</tr>
+<tr>
+<td>(Stretch) small Knowledge Pack for USP-B</td>
+<td>Advanced PPT / Word layout</td>
+</tr>
+</tbody></table>
+<p><strong>Minimum acceptance loop:</strong> 1 outline → 1 link → 1 voice interview (with intervene demo) → 1 Summary + Connector note.</p>
+<blockquote><p>Feature-level acceptance, gates, P0 list: <strong>EXECUTION_PRD.md</strong>.</p></blockquote>
+<h3>6.2 Phase 1 — first shippable version</h3>
+<ul>
+<li>Multi-project management &amp; permissions</li>
+<li><strong>≥1</strong> real internal data source + curated external sources</li>
+<li>USP-A: Bosch-context rules for outline &amp; summary</li>
+<li>USP-B: Knowledge Cards, light RAG, Guardrail, stable mechanism-aware probes</li>
+<li>Evidence review workspace, stronger export</li>
+<li>Multi Study / Session within one BU</li>
+</ul>
+<h3>6.3 Phase 2 — enterprise</h3>
+<ul>
+<li>Knowledge base, cross-project Research Memory</li>
+<li>Multi-BU tenancy, SSO, audit, data governance</li>
+<li>Deep internal–external correlation (full USP-A)</li>
+<li>Template library, evaluation, ops dashboard</li>
+</ul>
+<h3>6.4 Phase 3 (vision)</h3>
+<p>Cross-product / market signal correlation, trends &amp; knowledge gaps, Synthetic User evaluated separately.</p>
+<hr />
+<h2>07 | Capability blueprint (full product · strategic)</h2>
+<table><thead><tr>
+<th>Module</th>
+<th>Description</th>
+<th>POC</th>
+<th>Phase 1</th>
+</tr></thead><tbody>
+<tr>
+<td>Project / Study mgmt</td>
+<td>Goals, hypotheses, status</td>
+<td>Single Study</td>
+<td>Multi-project</td>
+</tr>
+<tr>
+<td>Guide Builder</td>
+<td>AI generate + human review</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Participant Link &amp; Consent</td>
+<td>Link, consent, device check</td>
+<td>Lite</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Real-Time Voice + ASR</td>
+<td>Voice, transcript, turn submit</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Interview Orchestrator</td>
+<td>Coverage, adaptation, fallback</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Researcher Live View</td>
+<td>Monitor, accept / override</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Generic Adaptive Probe</td>
+<td>Probe without knowledge hit</td>
+<td>✅ Must</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Domain Intelligence</td>
+<td>Internal/external, Connector</td>
+<td>Stub</td>
+<td>≥1 live source</td>
+</tr>
+<tr>
+<td>Knowledge Cards + RAG</td>
+<td>Mechanism–signal–hypothesis–probe</td>
+<td>Stretch</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Question Guardrail</td>
+<td>Neutrality, confidentiality</td>
+<td>Lite</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Evidence / Insight Pipeline</td>
+<td>Theme, Insight, review</td>
+<td>Lite</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Report Generation</td>
+<td>Summary, export</td>
+<td>Basic</td>
+<td>Enhanced</td>
+</tr>
+<tr>
+<td>Research Memory</td>
+<td>Cross-project reuse</td>
+<td>—</td>
+<td>Phase 2</td>
+</tr>
+<tr>
+<td>Admin / Governance</td>
+<td>SSO, RBAC, audit</td>
+<td>—</td>
+<td>Phase 2</td>
+</tr>
+</tbody></table>
+<hr />
+<h2>08 | Success metrics (approval level)</h2>
+<table><thead><tr>
+<th>Category</th>
+<th>Direction (full product)</th>
+</tr></thead><tbody>
+<tr>
+<td>Efficiency</td>
+<td>Shorter time from interview to reportable output</td>
+</tr>
+<tr>
+<td>Quality</td>
+<td>Insight evidence linkage ≥95%; researcher acceptance ≥80%</td>
+</tr>
+<tr>
+<td>Experience</td>
+<td>Session completion; acceptable next-question latency</td>
+</tr>
+<tr>
+<td>USP</td>
+<td>Traceable knowledge probes; mechanism-aware beats generic in blind review; zero high-risk leading/leak</td>
+</tr>
+<tr>
+<td>Compliance</td>
+<td>Classification, AI channel, retention confirmed before Phase 1</td>
+</tr>
+</tbody></table>
+<p>POC thresholds: <strong>EXECUTION_PRD.md</strong> § Acceptance.</p>
+<hr />
+<h2>09 | Risks &amp; responses (summary)</h2>
+<table><thead><tr>
+<th>Risk</th>
+<th>Response</th>
+</tr></thead><tbody>
+<tr>
+<td>Engineering knowledge → leading questions</td>
+<td>Hypotheses internal only; Guardrail + neutral wording</td>
+</tr>
+<tr>
+<td>Stale / wrong-model content</td>
+<td>Metadata filter, validity, review status</td>
+</tr>
+<tr>
+<td>AI hallucination in summary</td>
+<td>Evidence-first; quotes must map to Turns</td>
+</tr>
+<tr>
+<td>Knowledge overload</td>
+<td>Coverage map, probe budget, top-k</td>
+</tr>
+<tr>
+<td>POC scope creep</td>
+<td>Execution PRD Must / Stretch / Won't</td>
+</tr>
+<tr>
+<td>Customer undefined</td>
+<td>Generic POC + Connector stub; bind scenario after 7/31</td>
+</tr>
+</tbody></table>
+<hr />
+<h2>10 | RASIC</h2>
+<p><strong>RASIC:</strong> R Responsible · A Accountable · S Support · I Informed · C Consulted</p>
+<p><strong>Roles:</strong> UX · Data · PM (dual-hat TBC) · Res · <strong>Eng</strong> (FE+BE+AI, one team) · Biz · IT/Sec · Ops (full product)</p>
+<h3>10.1 Customer definition + POC</h3>
+<table><thead><tr>
+<th>Role</th>
+<th>Customer def</th>
+<th>Data info</th>
+<th>POC scope</th>
+<th>Outline</th>
+<th>Live interview</th>
+<th>Summary</th>
+<th>Data interface</th>
+<th>Kennel</th>
+<th>POC demo</th>
+</tr></thead><tbody>
+<tr>
+<td>UX</td>
+<td>R</td>
+<td>C</td>
+<td>A/R</td>
+<td>A/R</td>
+<td>C</td>
+<td>A/C</td>
+<td>I</td>
+<td>R</td>
+<td>A</td>
+</tr>
+<tr>
+<td>Data</td>
+<td>R</td>
+<td>A/R</td>
+<td>C</td>
+<td>S</td>
+<td>I</td>
+<td>C</td>
+<td>A/C</td>
+<td>R</td>
+<td>S</td>
+</tr>
+<tr>
+<td>PM</td>
+<td>C</td>
+<td>C</td>
+<td>R</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>A</td>
+<td>R</td>
+</tr>
+<tr>
+<td>Res</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>I</td>
+<td>I</td>
+<td>S</td>
+</tr>
+<tr>
+<td>Eng</td>
+<td>I</td>
+<td>C</td>
+<td>C</td>
+<td>R</td>
+<td>A/R</td>
+<td>R</td>
+<td>R</td>
+<td>S</td>
+<td>R</td>
+</tr>
+<tr>
+<td>Biz</td>
+<td>A/C</td>
+<td>C</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>C/I</td>
+</tr>
+<tr>
+<td>IT/Sec</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>C</td>
+<td>I</td>
+<td>C</td>
+<td>I</td>
+<td>I</td>
+</tr>
+</tbody></table>
+<h3>10.2 Phase 1</h3>
+<table><thead><tr>
+<th>Role</th>
+<th>Roadmap</th>
+<th>Multi-project</th>
+<th>E2E</th>
+<th>Source select</th>
+<th>Integration</th>
+<th>Bosch context</th>
+<th>Evidence</th>
+<th>Report</th>
+<th>Compliance</th>
+<th>Launch</th>
+<th>Rollout</th>
+</tr></thead><tbody>
+<tr>
+<td>UX</td>
+<td>C</td>
+<td>A/R</td>
+<td>A/R</td>
+<td>C</td>
+<td>I</td>
+<td>A/R</td>
+<td>A/R</td>
+<td>A/C</td>
+<td>I</td>
+<td>I</td>
+<td>R</td>
+</tr>
+<tr>
+<td>Data</td>
+<td>C</td>
+<td>C</td>
+<td>S</td>
+<td>A/R</td>
+<td>A/C</td>
+<td>R</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>S</td>
+</tr>
+<tr>
+<td>PM</td>
+<td>A/R</td>
+<td>R</td>
+<td>R</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>R</td>
+<td>C</td>
+<td>A</td>
+<td>A/R</td>
+</tr>
+<tr>
+<td>Res</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>I</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>I</td>
+<td>I</td>
+<td>R</td>
+</tr>
+<tr>
+<td>Eng</td>
+<td>C</td>
+<td>R</td>
+<td>R</td>
+<td>R</td>
+<td>R</td>
+<td>R</td>
+<td>R</td>
+<td>R</td>
+<td>S</td>
+<td>S</td>
+<td>S</td>
+</tr>
+<tr>
+<td>Biz</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>I</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>A/C</td>
+</tr>
+<tr>
+<td>IT/Sec</td>
+<td>I</td>
+<td>C</td>
+<td>I</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>I</td>
+<td>I</td>
+<td>A/R</td>
+<td>C</td>
+<td>I</td>
+</tr>
+<tr>
+<td>Ops</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>S</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>S</td>
+<td>R</td>
+<td>S</td>
+</tr>
+</tbody></table>
+<h3>10.3 Phase 2</h3>
+<table><thead><tr>
+<th>Role</th>
+<th>KB strategy</th>
+<th>KB build</th>
+<th>Multi-BU</th>
+<th>Internal–external</th>
+<th>Templates</th>
+<th>Multi-BU ops</th>
+</tr></thead><tbody>
+<tr>
+<td>UX</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>A/R</td>
+<td>S</td>
+</tr>
+<tr>
+<td>Data</td>
+<td>A/R</td>
+<td>A/C</td>
+<td>C</td>
+<td>A/R</td>
+<td>S</td>
+<td>S</td>
+</tr>
+<tr>
+<td>PM</td>
+<td>R</td>
+<td>C</td>
+<td>A/R</td>
+<td>R</td>
+<td>R</td>
+<td>A</td>
+</tr>
+<tr>
+<td>Res</td>
+<td>C</td>
+<td>C</td>
+<td>I</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+</tr>
+<tr>
+<td>Eng</td>
+<td>R</td>
+<td>R</td>
+<td>R</td>
+<td>R</td>
+<td>R</td>
+<td>S</td>
+</tr>
+<tr>
+<td>Biz</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>R</td>
+</tr>
+<tr>
+<td>IT/Sec</td>
+<td>C</td>
+<td>C</td>
+<td>A/C</td>
+<td>C</td>
+<td>I</td>
+<td>C</td>
+</tr>
+<tr>
+<td>Ops</td>
+<td>I</td>
+<td>S</td>
+<td>R</td>
+<td>I</td>
+<td>R</td>
+<td>A/R</td>
+</tr>
+</tbody></table>
+<hr />
+<h2>11 | Open Items / TBC</h2>
+<table><thead><tr>
+<th>Item</th>
+<th>Owner</th>
+<th>Due</th>
+</tr></thead><tbody>
+<tr>
+<td>Pilot customer &amp; Sponsor</td>
+<td>Data + UX</td>
+<td>2026-07-31</td>
+</tr>
+<tr>
+<td>Data-info list &amp; conclusions</td>
+<td>Data + UX</td>
+<td>2026-07-31</td>
+</tr>
+<tr>
+<td>Internal data source selection</td>
+<td>After customer def</td>
+<td>Post-Kennel</td>
+</tr>
+<tr>
+<td>Compliance (classification, AI, hosting)</td>
+<td>IT/Sec + team</td>
+<td>Before Phase 1</td>
+</tr>
+<tr>
+<td>PM / Ops separate? Final A for customer?</td>
+<td>Team</td>
+<td>TBC</td>
+</tr>
+<tr>
+<td>Schedule tweak post-Kennel</td>
+<td>Team</td>
+<td>After 2026-07-31</td>
+</tr>
+</tbody></table>
+<hr />
+<h2>12 | One-line positioning</h2>
+<blockquote><p><strong>Research Insight Synthesis Engine is an enterprise AI research platform that starts with real-time voice interviews, centers on traceable evidence, and uses Bosch internal/external knowledge and engineering mechanisms to generate more professional, neutral probes and Bosch-context summaries.</strong></p></blockquote>
+<hr />
+<h2>Appendix | Document Control</h2>
+<table><thead><tr>
+<th>Field</th>
+<th>Value</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Document Version</strong></td>
+<td>2.0</td>
+</tr>
+<tr>
+<td><strong>Last Updated</strong></td>
+<td>2026-07-27</td>
+</tr>
+<tr>
+<td><strong>Status</strong></td>
+<td>Draft</td>
+</tr>
+<tr>
+<td><strong>Languages</strong></td>
+<td><code>PRD.md</code> · <code>PRD_CN.md</code> · <code>PRD_bilingual.html</code></td>
+</tr>
+<tr>
+<td><strong>Execution</strong></td>
+<td><code>EXECUTION_PRD.md</code> · <code>EXECUTION_PRD_CN.md</code></td>
+</tr>
+</tbody></table>
+      </article>
+    </section>
+    <hr class="lang-divider" />
+    <section id="prd-zh" lang="zh-CN">
+      <p class="section-label">中文</p>
+      <article class="prd">
+<h1>Research Insight Synthesis Engine · 产品 PRD（立项与对齐）</h1>
+<p><strong>产品名：</strong> Research Insight Synthesis Engine（研究洞察综合引擎） <strong>项目编号：</strong> 13（UXGS Internal） <strong>文档定位：</strong> <strong>立项、资源对齐、阶段决策</strong>（母 PRD） <strong>执行文档：</strong> <code>EXECUTION_PRD_CN.md</code>（设计 / 开发 / POC 验收用）</p>
+<blockquote><p><strong>版本：</strong> V2.0｜<strong>日期：</strong> 2026-07-27｜<strong>状态：</strong> Draft — 客户定义与 POC 阶段</p></blockquote>
+<hr />
+<h2>01 | Project Overview</h2>
+<table><thead><tr>
+<th>项</th>
+<th>内容</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>产品名</strong></td>
+<td>Research Insight Synthesis Engine</td>
+</tr>
+<tr>
+<td><strong>产品类型</strong></td>
+<td>Enterprise AI 端到端采访产品</td>
+</tr>
+<tr>
+<td><strong>产品阶段</strong></td>
+<td>客户定义中 + 通用 POC；目标为完整端到端产品</td>
+</tr>
+<tr>
+<td><strong>核心链路</strong></td>
+<td><strong>生成采访大纲 → 链接发送受访者 → 实时自适应采访 → 总结报告</strong></td>
+</tr>
+<tr>
+<td><strong>产品负责人</strong></td>
+<td>TBC（Data 负责人 + UX 负责人共同推进客户与 data 信息收集）</td>
+</tr>
+<tr>
+<td><strong>读者</strong></td>
+<td>业务 Sponsor、Data / UX 负责人、Eng、试点客户方</td>
+</tr>
+</tbody></table>
+<h3>近期关键节点（POC 以本表为准；Kennel 后可微调）</h3>
+<table><thead><tr>
+<th>节点</th>
+<th>日期（约）</th>
+<th>说明</th>
+</tr></thead><tbody>
+<tr>
+<td>客户定义 + 收集 data 信息</td>
+<td><strong>2026-07-31</strong></td>
+<td>Data + UX 负责人</td>
+</tr>
+<tr>
+<td>Kennel 对齐</td>
+<td><strong>2026-07-31</strong></td>
+<td>排期锚点；之后可调整</td>
+</tr>
+<tr>
+<td><strong>POC 结束</strong></td>
+<td><strong>约 2026-08-05</strong></td>
+<td><strong>周期约一周半</strong></td>
+</tr>
+<tr>
+<td>Phase 1 启动</td>
+<td>Kennel 后</td>
+<td>见路线图</td>
+</tr>
+</tbody></table>
+<h3>文档体系</h3>
+<table><thead><tr>
+<th>文档</th>
+<th>用途</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>本 PRD</strong></td>
+<td>立项、对齐、范围与路线决策</td>
+</tr>
+<tr>
+<td><strong>EXECUTION_PRD_CN.md</strong></td>
+<td>页面 / API / 验收 / Gate / 数据模型等执行细节</td>
+</tr>
+<tr>
+<td><code>WIP/</code></td>
+<td>POC 演示、Pilot 记录、客户与 data 收集结果</td>
+</tr>
+</tbody></table>
+<hr />
+<h2>02 | Background &amp; Objectives</h2>
+<h3>2.1 要解决的问题</h3>
+<ul>
+<li>采访大纲依赖个人经验，<strong>专家结构与既有题库</strong>难复用</li>
+<li>采访、转录、分析、报告分散在多个工具，信息反复搬运</li>
+<li>通用 AI 能动态追问，但缺少<strong>产品 / 工程机制层面</strong>的判断</li>
+<li>内部资料、外部资料与真实客户回答之间<strong>缺少可追溯连接</strong></li>
+<li>总结难与<strong>博世语境</strong>对齐；外部 SaaS 无法深度对接内部数据</li>
+</ul>
+<h3>2.2 产品目标</h3>
+<ol>
+<li><strong>端到端闭环</strong>：大纲 → 实时语音采访 → 总结报告，同一产品内完成。</li>
+<li><strong>实时自适应 + 人工控制</strong>：AI 变题；采访员可实时查看并介入。</li>
+<li><strong>专家结构可复用</strong>：大纲生成依托既有<strong>数据库与专家结构</strong>。</li>
+<li><strong>双 USP 落地</strong>（见 §03）：数据关联 + 机制感知追问。</li>
+<li><strong>Human-in-the-loop</strong>：AI 建议，人审核、修改、覆盖、回溯。</li>
+</ol>
+<h3>2.3 产品原则</h3>
+<ol>
+<li><strong>End-to-end first</strong> — 研究从创建走到报告，不拆断链。</li>
+<li><strong>Human in control</strong> — 研究员保留最终判断权。</li>
+<li><strong>Knowledge grounded</strong> — 知识辅助提问与总结，不替受访者生成答案。</li>
+<li><strong>Evidence traceable</strong> — 结论与增强追问均可回溯来源。</li>
+<li><strong>Neutral by design</strong> — 内部假设不直接作为事实告知受访者。</li>
+<li><strong>Modular outputs</strong> — Guide、Transcript、Evidence、Theme、Insight、Report 独立保存、可复用。</li>
+</ol>
+<h3>2.4 成功标准（决策层）</h3>
+<p><strong>POC（约一周半，至 ~2026-08-05）：</strong></p>
+<ul>
+<li>基于数据库 / 专家结构生成并发布<strong>采访大纲</strong></li>
+<li><strong>链接</strong>邀请受访者；<strong>语音</strong>作答；AI <strong>变更下一题</strong></li>
+<li>采访员<strong>实时查看</strong>并<strong>介入</strong>下一题</li>
+<li>产出<strong>基础总结报告</strong>（模板级；引用可回到原文）</li>
+<li><strong>内部数据：Connector 契约 / 桩</strong>；不强制真实源联通</li>
+<li>（Stretch）小型 Knowledge Pack 演示机制感知追问</li>
+</ul>
+<p><strong>完整产品方向：</strong></p>
+<ul>
+<li>多项目、权限、≥1 类真实内部数据源</li>
+<li>大纲与总结的<strong>博世语境</strong>可配置</li>
+<li>知识库、跨项目复用、多 BU</li>
+</ul>
+<hr />
+<h2>03 | 核心价值主张（双 USP）</h2>
+<h3>USP-A｜数据层：内部 ↔ 外部关联 + 博世语境</h3>
+<blockquote><p>博世内部数据可与外部采集数据关联；在<strong>采访大纲生成</strong>与<strong>总结报告</strong>阶段做外部工具无法等价的「博世语境」调整。</p></blockquote>
+<table><thead><tr>
+<th>阶段</th>
+<th>大纲</th>
+<th>总结</th>
+</tr></thead><tbody>
+<tr>
+<td>POC</td>
+<td>专家结构 + 库；Connector <strong>接口预留</strong></td>
+<td>基础摘要 + 引用回溯</td>
+</tr>
+<tr>
+<td>完整产品</td>
+<td>内部 / 外部源参与 Guide；语境规则可配置</td>
+<td>语气、框架、证据链按博世语境输出</td>
+</tr>
+</tbody></table>
+<h3>USP-B｜追问层：Mechanism-aware 深度追问</h3>
+<blockquote><p>普通 AI 知道怎么追问；我们的 AI 知道<strong>为什么值得追问</strong>，以及下一问应验证哪个<strong>产品 / 设计假设</strong>。</p></blockquote>
+<p>利用 Bosch 产品、工程、设计知识与精选外部资料：</p>
+<pre><code>Engineering / Product Mechanism
+→ User-observable Signal
+→ Candidate Hypothesis
+→ Discriminating Evidence
+→ Neutral Customer-facing Probe</code></pre>
+<table><thead><tr>
+<th>阶段</th>
+<th>能力</th>
+</tr></thead><tbody>
+<tr>
+<td>POC</td>
+<td>Generic 自适应追问 <strong>Must</strong>；Knowledge Pack + 机制感知追问 <strong>Stretch</strong></td>
+</tr>
+<tr>
+<td>完整产品</td>
+<td>Knowledge Cards、RAG、Guardrail、Research Memory 体系化</td>
+</tr>
+</tbody></table>
+<p><strong>非目标：</strong> 不做「上传文件做普通 RAG」即视为完整差异；不把未经审核的 AI 结论当作企业事实。</p>
+<hr />
+<h2>04 | Users &amp; Customer</h2>
+<h3>4.1 客户状态</h3>
+<table><thead><tr>
+<th>项</th>
+<th>状态</th>
+</tr></thead><tbody>
+<tr>
+<td>试点客户 / Sponsor</td>
+<td><strong>定义中</strong> — <strong>2026-07-31 前</strong>定稿并收集 data 信息</td>
+</tr>
+<tr>
+<td>责任人</td>
+<td>Data + UX 负责人</td>
+</tr>
+<tr>
+<td>POC 策略</td>
+<td>客户未定前按<strong>通用场景</strong>推进</td>
+</tr>
+</tbody></table>
+<h3>4.2 角色</h3>
+<table><thead><tr>
+<th>角色</th>
+<th>价值</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>UX Researcher / 采访员</strong></td>
+<td>创建研究、审核大纲、监控访谈、干预问题、审核报告</td>
+</tr>
+<tr>
+<td><strong>Participant / 受访者</strong></td>
+<td>链接进入、语音回答、体验自适应下一题</td>
+</tr>
+<tr>
+<td><strong>Product / Engineering Expert</strong></td>
+<td>审核 Knowledge Cards、机制与假设（完整产品 / POC Stretch）</td>
+</tr>
+<tr>
+<td><strong>Data / Knowledge Owner</strong></td>
+<td>数据源、权限、同步（Phase 1+）</td>
+</tr>
+<tr>
+<td><strong>Business Reader</strong></td>
+<td>消费摘要与证据</td>
+</tr>
+<tr>
+<td><strong>System Admin</strong></td>
+<td>空间、角色、合规（Phase 2）</td>
+</tr>
+</tbody></table>
+<hr />
+<h2>05 | 端到端体验</h2>
+<pre><code>创建研究 → 导入目标与知识范围 → 生成并审核 Interview Guide
+→ 邀请受访者 → 实时语音自适应访谈 → 研究员监控与干预
+→ Evidence / Theme / Insight 分析 → 审核与报告 → 研究资产沉淀（完整产品）</code></pre>
+<h3>5.1 采访大纲（问卷大纲）</h3>
+<p>采访员在网站上生成的<strong>结构化访谈提纲</strong>（非填写式问卷）；支撑：<strong>数据库 + 专家结构</strong>；产出：受访者链接。</p>
+<h3>5.2 实时自适应采访</h3>
+<p>语音输入 · AI 变题 / 追问 · 采访员旁观与介入 · 简版 consent / 设备检查（POC）。</p>
+<h3>5.3 总结报告</h3>
+<p>POC：单场 Themes、要点、Quotes、基础导出。 完整产品：Evidence 链、博世语境、多场聚合、模板库。</p>
+<h3>5.4 证据链（完整产品目标）</h3>
+<pre><code>Interview Turn → Transcript → Evidence → Theme → Insight → Report</code></pre>
+<p>每条 Insight 须可回到：来源用户 → 问题 → 原话 → 时间 / 片段。</p>
+<hr />
+<h2>06 | Scope &amp; Roadmap</h2>
+<h3>6.1 POC（约一周半，至 ~2026-08-05）— <strong>以本表为准</strong></h3>
+<table><thead><tr>
+<th>纳入</th>
+<th>不纳入</th>
+</tr></thead><tbody>
+<tr>
+<td>单 Study：大纲（库 + 专家结构）</td>
+<td>真实内部库生产接入</td>
+</tr>
+<tr>
+<td>链接、语音、AI 变题、采访员介入</td>
+<td>多项目 / 多 BU</td>
+</tr>
+<tr>
+<td>单场基础 Summary + Quote 回溯</td>
+<td>完整 Insight Pipeline / Research Memory</td>
+</tr>
+<tr>
+<td>Connector <strong>契约 / 桩</strong></td>
+<td>SSO / RBAC / 审计</td>
+</tr>
+<tr>
+<td>Generic 自适应追问</td>
+<td>全双工 Voice Agent</td>
+</tr>
+<tr>
+<td>（Stretch）小型 Knowledge Pack 演示 USP-B</td>
+<td>高级 PPT / Word 排版</td>
+</tr>
+</tbody></table>
+<p><strong>最短验收闭环：</strong> 1 份大纲 → 1 链接 → 1 场语音采访（含介入）→ 1 份 Summary + Connector 说明。</p>
+<blockquote><p>功能级验收、Gate、P0 清单见 <strong>EXECUTION_PRD_CN.md</strong>。</p></blockquote>
+<h3>6.2 Phase 1 — 首个可推广版本</h3>
+<ul>
+<li>多项目管理与权限</li>
+<li><strong>≥1 类</strong>真实内部数据源 + 外部精选资料</li>
+<li>USP-A：大纲 / 总结博世语境规则</li>
+<li>USP-B：Knowledge Cards、轻量 RAG、Guardrail、机制感知追问稳定化</li>
+<li>Evidence 审核工作台、报告导出增强</li>
+<li>一个 BU 内多 Study / 多 Session</li>
+</ul>
+<h3>6.3 Phase 2 — 企业化</h3>
+<ul>
+<li>知识库、跨项目 Research Memory</li>
+<li>多 BU 租户、SSO、审计、数据治理</li>
+<li>内外部数据关联深化（USP-A 完整态）</li>
+<li>模板库、评测、运营看板</li>
+</ul>
+<h3>6.4 Phase 3（愿景）</h3>
+<p>跨产品 / 市场信号关联、趋势与知识空白、Synthetic User 单独评估。</p>
+<hr />
+<h2>07 | 能力蓝图（完整产品 · 战略视图）</h2>
+<blockquote><p>开发优先级与 POC 裁剪见执行 PRD。</p></blockquote>
+<table><thead><tr>
+<th>模块</th>
+<th>说明</th>
+<th>POC</th>
+<th>Phase 1</th>
+</tr></thead><tbody>
+<tr>
+<td>Project / Study 管理</td>
+<td>目标、假设、状态</td>
+<td>单 Study</td>
+<td>多项目</td>
+</tr>
+<tr>
+<td>Guide Builder</td>
+<td>AI 生成 + 人工审核发布</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Participant Link &amp; Consent</td>
+<td>链接、同意、设备检查</td>
+<td>简版</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Real-Time Voice + ASR</td>
+<td>语音、转录、轮次提交</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Interview Orchestrator</td>
+<td>覆盖度、变题、Fallback</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Researcher Live View</td>
+<td>监控、接受 / 覆盖下一问</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Generic Adaptive Probe</td>
+<td>无知识命中时追问</td>
+<td>✅ Must</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Domain Intelligence</td>
+<td>内部 / 外部源、Connector</td>
+<td>桩</td>
+<td>≥1 真源</td>
+</tr>
+<tr>
+<td>Knowledge Cards + RAG</td>
+<td>机制—信号—假设—追问</td>
+<td>Stretch</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Question Guardrail</td>
+<td>中立、保密、可回答性</td>
+<td>简版</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Evidence / Insight Pipeline</td>
+<td>Theme、Insight、审核</td>
+<td>轻量</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Report Generation</td>
+<td>Summary、导出</td>
+<td>基础</td>
+<td>增强</td>
+</tr>
+<tr>
+<td>Research Memory</td>
+<td>跨项目复用</td>
+<td>—</td>
+<td>Phase 2</td>
+</tr>
+<tr>
+<td>Admin / Governance</td>
+<td>SSO、RBAC、审计</td>
+<td>—</td>
+<td>Phase 2</td>
+</tr>
+</tbody></table>
+<hr />
+<h2>08 | 成功指标（立项层）</h2>
+<table><thead><tr>
+<th>类别</th>
+<th>指标（完整产品目标方向）</th>
+</tr></thead><tbody>
+<tr>
+<td>效率</td>
+<td>访谈到可汇报材料周期缩短；报告制作时间下降</td>
+</tr>
+<tr>
+<td>质量</td>
+<td>Insight 证据关联率 ≥95%；研究员采纳率 ≥80%</td>
+</tr>
+<tr>
+<td>体验</td>
+<td>访谈完成率；下一问延迟可接受；Session 可恢复</td>
+</tr>
+<tr>
+<td>USP</td>
+<td>知识增强追问可追溯；Mechanism-aware 盲评优于 Generic；零高风险诱导 / 泄露</td>
+</tr>
+<tr>
+<td>合规</td>
+<td>数据分级、AI 通道、保留策略确认（Phase 1 前）</td>
+</tr>
+</tbody></table>
+<p>POC 具体阈值见 <strong>EXECUTION_PRD_CN.md</strong> §验收。</p>
+<hr />
+<h2>09 | 风险与回应（摘要）</h2>
+<table><thead><tr>
+<th>风险</th>
+<th>回应</th>
+</tr></thead><tbody>
+<tr>
+<td>工程知识导致诱导提问</td>
+<td>假设仅系统内部使用；Guardrail + 中性表述</td>
+</tr>
+<tr>
+<td>资料过期 / 型号不匹配</td>
+<td>元数据过滤、有效期、审核状态</td>
+</tr>
+<tr>
+<td>AI 幻觉 / 不可信摘要</td>
+<td>Evidence-first；Quote 必须回到 Turn</td>
+</tr>
+<tr>
+<td>知识过多发散</td>
+<td>Coverage Map、追问预算、top-k</td>
+</tr>
+<tr>
+<td>POC 范围膨胀</td>
+<td>执行 PRD 明确 Must / Stretch / 不做</td>
+</tr>
+<tr>
+<td>客户未定</td>
+<td>通用 POC + Connector 桩；7/31 后绑定场景</td>
+</tr>
+</tbody></table>
+<hr />
+<h2>10 | RASIC</h2>
+<p><strong>RASIC：</strong> R 执行 · A 拍板 · S 支援 · I 知会 · C 咨询</p>
+<p><strong>角色：</strong> UX · Data · PM（兼岗 TBC）· Res · <strong>Eng</strong>（前端+后端+AI，当前合一）· Biz · IT/Sec · Ops（正式产品）</p>
+<h3>10.1 客户定义 + POC</h3>
+<table><thead><tr>
+<th>角色</th>
+<th>试点客户定义</th>
+<th>收集 data 信息</th>
+<th>POC 范围与验收</th>
+<th>大纲体验与规则</th>
+<th>实时采访</th>
+<th>总结报告</th>
+<th>内部数据接口</th>
+<th>Kennel</th>
+<th>POC 演示</th>
+</tr></thead><tbody>
+<tr>
+<td>UX</td>
+<td>R</td>
+<td>C</td>
+<td>A/R</td>
+<td>A/R</td>
+<td>C</td>
+<td>A/C</td>
+<td>I</td>
+<td>R</td>
+<td>A</td>
+</tr>
+<tr>
+<td>Data</td>
+<td>R</td>
+<td>A/R</td>
+<td>C</td>
+<td>S</td>
+<td>I</td>
+<td>C</td>
+<td>A/C</td>
+<td>R</td>
+<td>S</td>
+</tr>
+<tr>
+<td>PM</td>
+<td>C</td>
+<td>C</td>
+<td>R</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>A</td>
+<td>R</td>
+</tr>
+<tr>
+<td>Res</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>I</td>
+<td>I</td>
+<td>S</td>
+</tr>
+<tr>
+<td>Eng</td>
+<td>I</td>
+<td>C</td>
+<td>C</td>
+<td>R</td>
+<td>A/R</td>
+<td>R</td>
+<td>R</td>
+<td>S</td>
+<td>R</td>
+</tr>
+<tr>
+<td>Biz</td>
+<td>A/C</td>
+<td>C</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>C/I</td>
+</tr>
+<tr>
+<td>IT/Sec</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>C</td>
+<td>I</td>
+<td>C</td>
+<td>I</td>
+<td>I</td>
+</tr>
+</tbody></table>
+<h3>10.2 Phase 1 — 正式产品</h3>
+<table><thead><tr>
+<th>角色</th>
+<th>产品路线</th>
+<th>多项目</th>
+<th>全链路</th>
+<th>数据源选型</th>
+<th>数据接入</th>
+<th>博世语境</th>
+<th>证据链</th>
+<th>报告</th>
+<th>合规</th>
+<th>上线</th>
+<th>推广</th>
+</tr></thead><tbody>
+<tr>
+<td>UX</td>
+<td>C</td>
+<td>A/R</td>
+<td>A/R</td>
+<td>C</td>
+<td>I</td>
+<td>A/R</td>
+<td>A/R</td>
+<td>A/C</td>
+<td>I</td>
+<td>I</td>
+<td>R</td>
+</tr>
+<tr>
+<td>Data</td>
+<td>C</td>
+<td>C</td>
+<td>S</td>
+<td>A/R</td>
+<td>A/C</td>
+<td>R</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>S</td>
+</tr>
+<tr>
+<td>PM</td>
+<td>A/R</td>
+<td>R</td>
+<td>R</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>R</td>
+<td>C</td>
+<td>A</td>
+<td>A/R</td>
+</tr>
+<tr>
+<td>Res</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>I</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>I</td>
+<td>I</td>
+<td>R</td>
+</tr>
+<tr>
+<td>Eng</td>
+<td>C</td>
+<td>R</td>
+<td>R</td>
+<td>R</td>
+<td>R</td>
+<td>R</td>
+<td>R</td>
+<td>R</td>
+<td>S</td>
+<td>S</td>
+<td>S</td>
+</tr>
+<tr>
+<td>Biz</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>I</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>A/C</td>
+</tr>
+<tr>
+<td>IT/Sec</td>
+<td>I</td>
+<td>C</td>
+<td>I</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>I</td>
+<td>I</td>
+<td>A/R</td>
+<td>C</td>
+<td>I</td>
+</tr>
+<tr>
+<td>Ops</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>S</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>S</td>
+<td>R</td>
+<td>S</td>
+</tr>
+</tbody></table>
+<h3>10.3 Phase 2</h3>
+<table><thead><tr>
+<th>角色</th>
+<th>知识库策略</th>
+<th>知识库实现</th>
+<th>多 BU</th>
+<th>内外部关联</th>
+<th>模板/看板</th>
+<th>多 BU 运营</th>
+</tr></thead><tbody>
+<tr>
+<td>UX</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>A/R</td>
+<td>S</td>
+</tr>
+<tr>
+<td>Data</td>
+<td>A/R</td>
+<td>A/C</td>
+<td>C</td>
+<td>A/R</td>
+<td>S</td>
+<td>S</td>
+</tr>
+<tr>
+<td>PM</td>
+<td>R</td>
+<td>C</td>
+<td>A/R</td>
+<td>R</td>
+<td>R</td>
+<td>A</td>
+</tr>
+<tr>
+<td>Res</td>
+<td>C</td>
+<td>C</td>
+<td>I</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+</tr>
+<tr>
+<td>Eng</td>
+<td>R</td>
+<td>R</td>
+<td>R</td>
+<td>R</td>
+<td>R</td>
+<td>S</td>
+</tr>
+<tr>
+<td>Biz</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>R</td>
+</tr>
+<tr>
+<td>IT/Sec</td>
+<td>C</td>
+<td>C</td>
+<td>A/C</td>
+<td>C</td>
+<td>I</td>
+<td>C</td>
+</tr>
+<tr>
+<td>Ops</td>
+<td>I</td>
+<td>S</td>
+<td>R</td>
+<td>I</td>
+<td>R</td>
+<td>A/R</td>
+</tr>
+</tbody></table>
+<hr />
+<h2>11 | Open Items / TBC</h2>
+<table><thead><tr>
+<th>项</th>
+<th>Owner</th>
+<th>截止</th>
+</tr></thead><tbody>
+<tr>
+<td>试点客户与 Sponsor</td>
+<td>Data + UX</td>
+<td>2026-07-31</td>
+</tr>
+<tr>
+<td>data 信息清单与结论</td>
+<td>Data + UX</td>
+<td>2026-07-31</td>
+</tr>
+<tr>
+<td>内部数据源选型</td>
+<td>客户定义后</td>
+<td>Kennel 后</td>
+</tr>
+<tr>
+<td>合规（分级、AI 通道、托管）</td>
+<td>IT/Sec + 项目组</td>
+<td>Phase 1 前</td>
+</tr>
+<tr>
+<td>PM / Ops 是否单列；客户定义最终 A</td>
+<td>项目组</td>
+<td>TBC</td>
+</tr>
+<tr>
+<td>Kennel 后排期微调</td>
+<td>项目组</td>
+<td>2026-07-31 后</td>
+</tr>
+</tbody></table>
+<hr />
+<h2>12 | 一句话定位</h2>
+<blockquote><p><strong>Research Insight Synthesis Engine 是以实时语音访谈为入口、以可追溯研究证据为核心，并通过博世内外部知识与工程机制生成更专业、更中性追问与博世语境总结的企业级 AI 研究平台。</strong></p></blockquote>
+<hr />
+<h2>Appendix | Document Control</h2>
+<table><thead><tr>
+<th>字段</th>
+<th>值</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Document Version</strong></td>
+<td>2.0</td>
+</tr>
+<tr>
+<td><strong>Last Updated</strong></td>
+<td>2026-07-27</td>
+</tr>
+<tr>
+<td><strong>Status</strong></td>
+<td>Draft</td>
+</tr>
+<tr>
+<td><strong>Languages</strong></td>
+<td><code>PRD.md</code> · <code>PRD_CN.md</code> · <code>PRD_bilingual.html</code></td>
+</tr>
+<tr>
+<td><strong>Execution</strong></td>
+<td><code>EXECUTION_PRD.md</code> · <code>EXECUTION_PRD_CN.md</code></td>
+</tr>
+</tbody></table>
+      </article>
+    </section>
+  </div>
+</body>
+</html>

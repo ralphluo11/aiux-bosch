@@ -1,0 +1,9 @@
+[project]
+name = "ai-ux-interview-core"
+version = "0.6.0"
+description = "Evidence-first multi-format research agent with human review and traceable insights."
+requires-python = ">=3.9"
+dependencies = []
+
+[tool.ruff]
+line-length = 100

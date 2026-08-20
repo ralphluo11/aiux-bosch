@@ -1,0 +1,61 @@
+{
+  "cards": [
+    {
+      "card_id": "fridge_airflow_001",
+      "source_ids": ["source_fridge_mechanism_v1"],
+      "product_scope": "refrigerator",
+      "feature_or_component": "冷藏室风道与出风口",
+      "mechanism": "冷风通过后部风道进入冷藏室，摆放位置与出风口遮挡会改变局部温度分布。",
+      "observable_user_signals": ["后面的菜冻住", "后面冻", "温度不均", "门边不够冷"],
+      "trigger_or_context": ["刚放入很多食物", "塞得很满", "食物摆放"],
+      "candidate_hypotheses": [
+        "食物距离出风口过近导致局部过冷",
+        "食物遮挡影响冷气循环",
+        "当前模式或温度设置不匹配使用场景"
+      ],
+      "discriminating_evidence": ["问题发生的具体位置、装载状态和模式设置"],
+      "neutral_probe_seeds": [
+        "这种情况通常发生在冰箱的哪个位置？",
+        "刚补充很多食物后更明显，还是平时也会发生？",
+        "你注意到这个问题时，通常使用的是哪个模式或温度设置？"
+      ],
+      "review_status": "approved",
+      "keywords": ["冻住", "结冰", "不够冷", "出风口"]
+    },
+    {
+      "card_id": "fridge_door_002",
+      "source_ids": ["source_fridge_mechanism_v1"],
+      "product_scope": "refrigerator",
+      "feature_or_component": "门封与开门行为",
+      "mechanism": "门封状态和开门频率会影响温度恢复速度与冷凝表现。",
+      "observable_user_signals": ["温度恢复很慢", "门上有水", "经常有冷凝水", "关门后还是不冷"],
+      "trigger_or_context": ["频繁开门", "门没关严", "潮湿天气"],
+      "candidate_hypotheses": [
+        "高频开门导致温度恢复时间变长",
+        "门封接触状态影响密闭性",
+        "环境湿度加剧可见冷凝"
+      ],
+      "discriminating_evidence": ["问题与开门次数、关门状态和环境湿度的时间关系"],
+      "neutral_probe_seeds": [
+        "这个现象通常是在什么使用情境之后出现的？",
+        "从关门到恢复正常，大概需要多长时间？"
+      ],
+      "review_status": "approved",
+      "keywords": ["开门", "关门", "冷凝", "水珠"]
+    },
+    {
+      "card_id": "fridge_unreviewed_999",
+      "source_ids": ["source_unverified_note"],
+      "product_scope": "refrigerator",
+      "feature_or_component": "未验证内部推测",
+      "mechanism": "未审核机制不得用于正式追问。",
+      "observable_user_signals": ["神秘故障"],
+      "trigger_or_context": ["任意情况"],
+      "candidate_hypotheses": ["未审核假设"],
+      "discriminating_evidence": ["未审核信息"],
+      "neutral_probe_seeds": ["是不是因为内部故障码导致的？"],
+      "review_status": "draft",
+      "keywords": ["神秘故障"]
+    }
+  ]
+}

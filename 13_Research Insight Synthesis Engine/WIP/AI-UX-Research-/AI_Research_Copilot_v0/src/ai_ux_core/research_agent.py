@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import time
 from dataclasses import dataclass
 from typing import Any, Protocol
 from urllib.error import HTTPError, URLError
@@ -76,6 +77,11 @@ class ResearchAgent(Protocol):
 
     def revise_artifact(
         self, *, content: str, instruction: str, artifact_kind: str, language: str
+    ) -> dict[str, Any]:
+        ...
+
+    def answer_project_question(
+        self, *, question: str, language: str, source_context: list[dict[str, str]]
     ) -> dict[str, Any]:
         ...
 
@@ -694,6 +700,32 @@ def flag_overgeneralized_findings(
     return flagged
 
 
+PROJECT_CHAT_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "answer": {"type": "string"},
+        "source_ids": {"type": "array", "items": {"type": "string"}},
+        "limitations": {"type": "array", "items": {"type": "string"}},
+        "suggested_actions": {"type": "array", "items": {"type": "string"}},
+    },
+    "required": ["answer", "source_ids", "limitations", "suggested_actions"],
+    "additionalProperties": False,
+}
+
+
+PROJECT_CHAT_INSTRUCTIONS = """你是企业 UX Research 项目的资料问答助手。
+只根据输入的 project sources 回答用户问题。回答要直接、简洁、使用任务指定语言。
+
+硬性规则：
+1. source_ids 只能填写输入中实际存在的 source_id；每一项事实性结论必须有对应来源。
+2. 资料没有说明时，明确说“当前项目资料未说明”，不要猜测、补全或使用外部知识。
+3. 不把项目中的受访者原话扩写成群体性结论；保留现有的限制、不确定性和审核状态。
+4. 这是只读问答：不声称已修改、保存、上传或生成任何项目文件。
+5. limitations 列出会影响回答可靠性的资料缺口；suggested_actions 只给 0 到 3 条下一步建议。
+6. 不输出隐藏思维过程。
+"""
+
+
 class OpenAIResponsesResearchAgent:
     mode = "live_ai"
 
@@ -788,6 +820,44 @@ class OpenAIResponsesResearchAgent:
             "api_used": api_used,
             "provider_masked_term_count": masked_term_count,
             **result,
+        }
+
+    def answer_project_question(
+        self, *, question: str, language: str, source_context: list[dict[str, str]]
+    ) -> dict[str, Any]:
+        result, api_used, masked_term_count = self._call_structured(
+            input_payload={
+                "question": question,
+                "language": language,
+                "project_sources": source_context,
+            },
+            instructions=PROJECT_CHAT_INSTRUCTIONS,
+            schema=PROJECT_CHAT_SCHEMA,
+            schema_name="project_chat_answer",
+            max_output_tokens=1_500,
+        )
+        source_ids = result.get("source_ids", [])
+        if not isinstance(source_ids, list) or any(
+            not isinstance(item, str) for item in source_ids
+        ):
+            raise ResearchAgentError("project_chat_invalid_source_ids")
+        return {
+            "agent_mode": self.mode,
+            "model": self.model_name,
+            "api_used": api_used,
+            "provider_masked_term_count": masked_term_count,
+            "answer": str(result.get("answer", "")).strip(),
+            "source_ids": source_ids,
+            "limitations": [
+                str(item).strip()
+                for item in result.get("limitations", [])
+                if str(item).strip()
+            ],
+            "suggested_actions": [
+                str(item).strip()
+                for item in result.get("suggested_actions", [])
+                if str(item).strip()
+            ],
         }
 
     def cluster_themes(
@@ -1147,8 +1217,16 @@ class OpenAIResponsesResearchAgent:
                 raise ResearchAgentError(
                     f"{api_used}_api_http_{exc.code}: {detail[:500]}"
                 ) from exc
-            except (URLError, TimeoutError) as exc:
-                raise ResearchAgentError(f"responses_api_unavailable: {exc}") from exc
+            except (URLError, TimeoutError, OSError) as exc:
+                # Some OpenAI-compatible gateways occasionally close the socket
+                # before returning a status line.  `RemoteDisconnected` is an
+                # OSError, not a URLError, so without this branch it escaped the
+                # request handler and the browser only saw the opaque
+                # `Failed to fetch`. Retry once, then return a real API error.
+                if attempt == 0:
+                    time.sleep(0.5)
+                    continue
+                raise ResearchAgentError(f"{api_used}_api_unavailable: {exc}") from exc
             except (json.JSONDecodeError, UnicodeDecodeError) as exc:
                 raise ResearchAgentError("responses_api_invalid_json") from exc
         else:
@@ -1466,6 +1544,20 @@ class OfflineResearchPreviewAgent:
         self, *, content: str, instruction: str, artifact_kind: str, language: str
     ) -> dict[str, Any]:
         raise ResearchAgentError("live_ai_required_for_artifact_revision")
+
+    def answer_project_question(
+        self, *, question: str, language: str, source_context: list[dict[str, str]]
+    ) -> dict[str, Any]:
+        return {
+            "agent_mode": self.mode,
+            "model": None,
+            "api_used": "offline",
+            "provider_masked_term_count": 0,
+            "answer": "当前未连接 Live AI，不能可靠地根据项目资料回答问题。请先配置 AI Endpoint。",
+            "source_ids": [],
+            "limitations": ["离线预览模式不会进行语义问答。"],
+            "suggested_actions": ["配置 Live AI 后重试。"],
+        }
 
     def analyze(self, task: ResearchAnalysisTask) -> dict[str, Any]:
         evidence = []

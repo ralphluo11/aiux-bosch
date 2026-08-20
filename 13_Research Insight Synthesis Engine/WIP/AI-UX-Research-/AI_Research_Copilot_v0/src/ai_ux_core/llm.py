@@ -101,6 +101,7 @@ class OpenAIResponsesProbeGenerator:
         model: str = "gpt-5.6-terra",
         base_url: str = "https://api.openai.com/v1",
         timeout_seconds: float = 20.0,
+        api_style: str = "auto",
     ) -> None:
         api_key = api_key.strip()
         if not api_key:
@@ -111,6 +112,9 @@ class OpenAIResponsesProbeGenerator:
         self.model_name = model
         self.base_url = base_url.rstrip("/")
         self.timeout_seconds = timeout_seconds
+        if api_style not in {"auto", "responses", "chat_completions"}:
+            raise ValueError("api_style_must_be_auto_responses_or_chat_completions")
+        self.api_style = api_style
 
     def generate(
         self,
@@ -118,13 +122,11 @@ class OpenAIResponsesProbeGenerator:
         cards: list[KnowledgeCard],
         hits: list[RetrievalHit],
     ) -> GeneratedProbe:
-        payload = {
+        prompt = self._prompt_payload(context, cards, hits)
+        responses_payload = {
             "model": self.model_name,
             "instructions": SYSTEM_INSTRUCTIONS,
-            "input": json.dumps(
-                self._prompt_payload(context, cards, hits),
-                ensure_ascii=False,
-            ),
+            "input": json.dumps(prompt, ensure_ascii=False),
             "text": {
                 "format": {
                     "type": "json_schema",
@@ -136,27 +138,34 @@ class OpenAIResponsesProbeGenerator:
             "max_output_tokens": 700,
             "store": False,
         }
-        request = Request(
-            f"{self.base_url}/responses",
-            data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
-            method="POST",
-            headers={
-                "Authorization": f"Bearer {self.api_key}",
-                "Content-Type": "application/json",
+        chat_payload = {
+            "model": self.model_name,
+            "messages": [
+                {"role": "system", "content": SYSTEM_INSTRUCTIONS},
+                {"role": "user", "content": json.dumps(prompt, ensure_ascii=False)},
+            ],
+            "response_format": {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "interview_probe_decision",
+                    "strict": True,
+                    "schema": PROBE_SCHEMA,
+                },
             },
-        )
-        try:
-            with urlopen(request, timeout=self.timeout_seconds) as response:
-                raw = json.loads(response.read().decode("utf-8"))
-        except HTTPError as exc:
-            detail = exc.read().decode("utf-8", errors="replace")[:500]
-            raise ProbeGenerationError(f"responses_api_http_{exc.code}: {detail}") from exc
-        except (URLError, TimeoutError) as exc:
-            raise ProbeGenerationError(f"responses_api_unavailable: {exc}") from exc
-        except (json.JSONDecodeError, UnicodeDecodeError) as exc:
-            raise ProbeGenerationError("responses_api_invalid_json") from exc
-
-        output_text = self._extract_output_text(raw)
+            "max_tokens": 700,
+        }
+        if self.api_style == "chat_completions":
+            raw = self._post_json("/chat/completions", chat_payload, "chat_completions")
+            output_text = self._extract_chat_output_text(raw)
+        else:
+            try:
+                raw = self._post_json("/responses", responses_payload, "responses")
+                output_text = self._extract_output_text(raw)
+            except ProbeGenerationError as exc:
+                if self.api_style != "auto" or not str(exc).startswith("responses_api_http_404:"):
+                    raise
+                raw = self._post_json("/chat/completions", chat_payload, "chat_completions")
+                output_text = self._extract_chat_output_text(raw)
         try:
             data = json.loads(output_text)
             return GeneratedProbe(
@@ -178,7 +187,31 @@ class OpenAIResponsesProbeGenerator:
                 rationale=str(data["rationale"]).strip(),
             )
         except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
-            raise ProbeGenerationError("responses_api_invalid_structured_output") from exc
+            raise ProbeGenerationError("probe_api_invalid_structured_output") from exc
+
+    def _post_json(self, path: str, payload: dict[str, Any], api_used: str) -> dict[str, Any]:
+        request = Request(
+            f"{self.base_url}{path}",
+            data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+            method="POST",
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            },
+        )
+        try:
+            with urlopen(request, timeout=self.timeout_seconds) as response:
+                result = json.loads(response.read().decode("utf-8"))
+        except HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")[:500]
+            raise ProbeGenerationError(f"{api_used}_api_http_{exc.code}: {detail}") from exc
+        except (URLError, TimeoutError, OSError) as exc:
+            raise ProbeGenerationError(f"{api_used}_api_unavailable: {exc}") from exc
+        except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+            raise ProbeGenerationError(f"{api_used}_api_invalid_json") from exc
+        if not isinstance(result, dict):
+            raise ProbeGenerationError(f"{api_used}_api_invalid_json")
+        return result
 
     def _prompt_payload(
         self,
@@ -243,6 +276,27 @@ class OpenAIResponsesProbeGenerator:
             raise ProbeGenerationError("responses_api_missing_output_text")
         return "".join(parts)
 
+    @staticmethod
+    def _extract_chat_output_text(response: dict[str, Any]) -> str:
+        try:
+            message = response["choices"][0]["message"]
+            if message.get("refusal"):
+                raise ProbeGenerationError("chat_completions_api_refusal")
+            content = message["content"]
+        except (KeyError, IndexError, TypeError) as exc:
+            raise ProbeGenerationError("chat_completions_missing_output_text") from exc
+        if isinstance(content, str) and content.strip():
+            return content
+        if isinstance(content, list):
+            text = "".join(
+                item.get("text", "")
+                for item in content
+                if isinstance(item, dict) and isinstance(item.get("text"), str)
+            )
+            if text.strip():
+                return text
+        raise ProbeGenerationError("chat_completions_missing_output_text")
+
 
 def build_probe_generator_from_env() -> ProbeGenerator | None:
     settings = load_llm_settings(default_timeout_seconds=20.0)
@@ -253,4 +307,5 @@ def build_probe_generator_from_env() -> ProbeGenerator | None:
         model=settings.model,
         base_url=settings.base_url,
         timeout_seconds=settings.timeout_seconds,
+        api_style=settings.api_style,
     )

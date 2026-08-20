@@ -23,6 +23,14 @@ class InterviewRequestHandler(BaseHTTPRequestHandler):
     static_dir: Path
 
     def do_GET(self) -> None:
+        try:
+            self._do_GET()
+        except (BrokenPipeError, ConnectionResetError):
+            return
+        except Exception:
+            self._send_error(HTTPStatus.INTERNAL_SERVER_ERROR, "internal_server_error")
+
+    def _do_GET(self) -> None:
         path = urlparse(self.path).path
         if path == "/api/health":
             self._send_json(self.application.runtime_payload())
@@ -75,6 +83,14 @@ class InterviewRequestHandler(BaseHTTPRequestHandler):
         self._serve_static(path)
 
     def do_POST(self) -> None:
+        try:
+            self._do_POST()
+        except (BrokenPipeError, ConnectionResetError):
+            return
+        except Exception:
+            self._send_error(HTTPStatus.INTERNAL_SERVER_ERROR, "internal_server_error")
+
+    def _do_POST(self) -> None:
         path = urlparse(self.path).path
         if path == "/api/projects":
             try:
@@ -107,6 +123,10 @@ class InterviewRequestHandler(BaseHTTPRequestHandler):
                     self._send_json(
                         self.application.revise_project_artifact(parts[2], self._read_json())
                     )
+                    return
+                if len(parts) == 5 and parts[3] == "artifacts" and parts[4] == "suggest":
+                    result, _, _ = self.application.suggest_project_artifact_revision(parts[2], self._read_json())
+                    self._send_json(result)
                     return
                 if len(parts) == 4 and parts[3] == "transcripts":
                     self._send_json(
@@ -141,6 +161,9 @@ class InterviewRequestHandler(BaseHTTPRequestHandler):
                     return
                 if len(parts) == 4 and parts[3] == "summary":
                     self._send_json(self.application.summarize_project_context(parts[2]))
+                    return
+                if len(parts) == 4 and parts[3] == "chat":
+                    self._send_json(self.application.answer_project_question(parts[2], self._read_json()))
                     return
             except ProjectNotFoundError:
                 self._send_error(HTTPStatus.NOT_FOUND, "project_not_found")
@@ -217,6 +240,14 @@ class InterviewRequestHandler(BaseHTTPRequestHandler):
         self._send_error(HTTPStatus.NOT_FOUND, "route_not_found")
 
     def do_DELETE(self) -> None:
+        try:
+            self._do_DELETE()
+        except (BrokenPipeError, ConnectionResetError):
+            return
+        except Exception:
+            self._send_error(HTTPStatus.INTERNAL_SERVER_ERROR, "internal_server_error")
+
+    def _do_DELETE(self) -> None:
         parts = urlparse(self.path).path.strip("/").split("/")
         if len(parts) == 3 and parts[0] == "api" and parts[1] == "projects":
             try:

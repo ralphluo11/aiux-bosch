@@ -234,7 +234,7 @@ def _read_json_response(request: urllib.request.Request, error_code: str) -> dic
     try:
         with urllib.request.urlopen(request, timeout=180) as response:
             result = json.loads(response.read().decode("utf-8"))
-    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, json.JSONDecodeError) as exc:
+    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError, json.JSONDecodeError) as exc:
         raise DocumentExtractionError(error_code) from exc
     if not isinstance(result, dict):
         raise DocumentExtractionError(error_code)

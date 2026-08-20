@@ -94,12 +94,23 @@ class ResearchProjectRepository:
                     UNIQUE(project_id, kind)
                 );
 
+                CREATE TABLE IF NOT EXISTS project_chat_messages (
+                    id TEXT PRIMARY KEY,
+                    project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+                    role TEXT NOT NULL CHECK(role IN ('user', 'assistant')),
+                    content TEXT NOT NULL,
+                    source_ids_json TEXT NOT NULL DEFAULT '[]',
+                    created_at TEXT NOT NULL
+                );
+
                 CREATE INDEX IF NOT EXISTS idx_transcripts_project
                     ON transcripts(project_id);
                 CREATE INDEX IF NOT EXISTS idx_runs_project
                     ON analysis_runs(project_id, created_at DESC);
                 CREATE INDEX IF NOT EXISTS idx_questionnaire_runs_project
                     ON questionnaire_runs(project_id, created_at DESC);
+                CREATE INDEX IF NOT EXISTS idx_project_chat_messages_project
+                    ON project_chat_messages(project_id, created_at DESC);
                 """
             )
             columns = {row[1] for row in connection.execute("PRAGMA table_info(projects)")}
@@ -226,6 +237,12 @@ class ResearchProjectRepository:
                 "SELECT * FROM artifacts WHERE project_id = ? ORDER BY updated_at DESC",
                 (project_id,),
             ).fetchall()
+            chat_messages = connection.execute(
+                """SELECT id, role, content, source_ids_json, created_at
+                   FROM project_chat_messages WHERE project_id = ?
+                   ORDER BY created_at DESC, rowid DESC LIMIT 100""",
+                (project_id,),
+            ).fetchall()
         result = self._project_row(row)
         result["transcripts"] = [dict(item) for item in transcripts]
         result["transcript_count"] = len(transcripts)
@@ -235,7 +252,39 @@ class ResearchProjectRepository:
             if latest_questionnaire else None
         )
         result["artifacts"] = [dict(item) for item in artifacts]
+        result["chat_messages"] = [
+            {
+                **dict(item),
+                "source_ids": json.loads(item["source_ids_json"]),
+            }
+            for item in reversed(chat_messages)
+        ]
         return result
+
+    def save_chat_exchange(
+        self,
+        project_id: str,
+        *,
+        question: str,
+        answer: str,
+        source_ids: list[str],
+    ) -> None:
+        self._require_project(project_id)
+        timestamp = _now()
+        with self._lock, self._connect() as connection:
+            connection.executemany(
+                """INSERT INTO project_chat_messages
+                   (id, project_id, role, content, source_ids_json, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?)""",
+                [
+                    (_id("chat"), project_id, "user", question, "[]", timestamp),
+                    (_id("chat"), project_id, "assistant", answer, json.dumps(source_ids, ensure_ascii=False), timestamp),
+                ],
+            )
+            connection.execute(
+                "UPDATE projects SET updated_at = ? WHERE id = ?",
+                (timestamp, project_id),
+            )
 
     def save_artifact(self, project_id: str, payload: dict[str, Any]) -> dict[str, Any]:
         self._require_project(project_id)

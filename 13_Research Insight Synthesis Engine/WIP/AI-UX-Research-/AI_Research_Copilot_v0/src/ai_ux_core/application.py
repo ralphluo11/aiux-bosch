@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import binascii
+import json
 import os
 from pathlib import Path
 from threading import RLock, Thread
@@ -229,6 +230,62 @@ class InterviewApplication:
             "generated_artifact": "Brief.md",
         }
 
+    def answer_project_question(self, project_id: str, payload: dict) -> dict:
+        question = payload.get("question")
+        if not isinstance(question, str) or not question.strip():
+            raise ValueError("chat_question_is_required")
+        question = question.strip()
+        if len(question) > 2_000:
+            raise ValueError("chat_question_limit_is_2000_characters")
+
+        project = self._repository().get_project(project_id)
+        sources: list[dict[str, str]] = [{
+            "source_id": "PROJECT-BRIEF",
+            "label": "项目 Brief",
+            "content": (
+                f"项目名称：{project['name']}\n研究目标：{project['research_goal']}\n"
+                f"研究问题：{'；'.join(project['research_questions'])}\n"
+                f"目标用户：{project.get('target_users') or 'TBC'}\n"
+                f"项目备注：{project.get('project_notes') or '无'}"
+            ),
+        }]
+        remaining = 42_000
+
+        def add_source(source_id: str, label: str, content: object, limit: int = 8_000) -> None:
+            nonlocal remaining
+            if remaining <= 0 or not content:
+                return
+            excerpt = str(content).strip()[: min(limit, remaining)]
+            if excerpt:
+                sources.append({"source_id": source_id, "label": label, "content": excerpt})
+                remaining -= len(excerpt)
+
+        for artifact in project.get("artifacts", []):
+            add_source(f"ARTIFACT:{artifact['kind']}", str(artifact.get("title") or artifact["kind"]), artifact.get("content"))
+        if project.get("latest_analysis"):
+            add_source("ANALYSIS:latest", "最新 Evidence 与 Analysis", json.dumps(project["latest_analysis"], ensure_ascii=False), 12_000)
+        if project.get("latest_questionnaire"):
+            add_source("QUESTIONNAIRE:latest", "最新问卷", json.dumps(project["latest_questionnaire"], ensure_ascii=False), 8_000)
+        for transcript in project.get("transcripts", []):
+            add_source(f"SOURCE:{transcript['id']}", str(transcript.get("file_name") or transcript["id"]), transcript.get("content"), 6_000)
+
+        answer = self.research_agent.answer_project_question(
+            question=question,
+            language=project.get("language", "zh-CN"),
+            source_context=sources,
+        )
+        known_sources = {item["source_id"]: item["label"] for item in sources}
+        source_ids = [item for item in answer.get("source_ids", []) if item in known_sources]
+        answer["sources"] = [{"source_id": source_id, "label": known_sources[source_id]} for source_id in source_ids]
+        answer["source_ids"] = source_ids
+        self._repository().save_chat_exchange(
+            project_id,
+            question=question,
+            answer=str(answer.get("answer", "")),
+            source_ids=source_ids,
+        )
+        return answer
+
     def add_project_transcript(self, project_id: str, payload: dict) -> dict:
         return self._repository().add_transcript(project_id, payload)
 
@@ -242,6 +299,19 @@ class InterviewApplication:
         return self._repository().save_artifact(project_id, payload)
 
     def revise_project_artifact(self, project_id: str, payload: dict) -> dict:
+        result, kind, title = self.suggest_project_artifact_revision(project_id, payload)
+        artifact = self._repository().save_artifact(
+            project_id,
+            {
+                "kind": kind,
+                "title": title,
+                "content": result["revised_content"],
+                "status": "ai_revised_pending_review",
+            },
+        )
+        return {**result, "artifact": artifact}
+
+    def suggest_project_artifact_revision(self, project_id: str, payload: dict) -> tuple[dict, str, str]:
         project = self._repository().get_project(project_id)
         content = payload.get("content")
         instruction = payload.get("instruction")
@@ -261,16 +331,7 @@ class InterviewApplication:
             artifact_kind=kind,
             language=project.get("language", "zh-CN"),
         )
-        artifact = self._repository().save_artifact(
-            project_id,
-            {
-                "kind": kind,
-                "title": title,
-                "content": result["revised_content"],
-                "status": "ai_revised_pending_review",
-            },
-        )
-        return {**result, "artifact": artifact}
+        return result, kind, title
 
     def add_project_document(self, project_id: str, payload: dict) -> dict:
         source_id = payload.get("source_id")

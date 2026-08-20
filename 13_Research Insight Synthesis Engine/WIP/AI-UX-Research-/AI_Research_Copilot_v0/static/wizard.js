@@ -1,8 +1,8 @@
 const $=(s,r=document)=>r.querySelector(s);const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=v=>String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
-let state={projects:[],project:null,view:"portfolio",folder:"brief",artifact:null,messages:[],busy:false,documentMode:"preview",editingQuestionIndex:null,pendingQuestionnaireGap:null,pendingQuestionnaireAdvice:null,pendingQuestionnaireQueue:[],questionnaireSuggestions:[],runtime:null,runtimeTimer:null};
+let state={projects:[],project:null,view:"portfolio",folder:"brief",artifact:null,messages:[],busy:false,documentMode:"preview",editingQuestionIndex:null,pendingQuestionnaireGap:null,pendingQuestionnaireAdvice:null,pendingQuestionnaireQueue:[],questionnaireSuggestions:[],runtime:null,runtimeTimer:null,connection:null};
 const chatKey=id=>`uxgs-chat-${id}`;
-function restoreMessages(id){try{const saved=JSON.parse(localStorage.getItem(chatKey(id))||"[]");state.messages=Array.isArray(saved)?saved:[]}catch{state.messages=[]}}
+function restoreMessages(id,serverMessages=[]){if(Array.isArray(serverMessages)&&serverMessages.length){state.messages=serverMessages.map(message=>({role:message.role,text:message.content}));return}try{const saved=JSON.parse(localStorage.getItem(chatKey(id))||"[]");state.messages=Array.isArray(saved)?saved:[]}catch{state.messages=[]}}
 function persistMessages(){
   if(!state.project?.id)return;
   try{
@@ -32,14 +32,15 @@ function briefUpdatedAt(){
 }
 function downstreamStale(folderId){
   if(folderId==="brief"||folderId==="context"||folderId==="responses")return false;
+  const artifactKind=artifactKinds[folderId]?.[0];
+  const artifact=artifactKind?(state.project?.artifacts||[]).find(a=>a.kind===artifactKind):null;
+  const analysisAt=state.project?.latest_analysis?.created_at;
+  if((folderId==="review"||folderId==="delivery")&&analysisAt&&artifact)return new Date(analysisAt)>new Date(artifact.updated_at);
   const briefAt=briefUpdatedAt();
   if(!briefAt)return false;
   if(folderId==="evidence"){
-    const at=state.project?.latest_analysis?.created_at;
-    return Boolean(at)&&new Date(briefAt)>new Date(at);
+    return Boolean(analysisAt)&&new Date(briefAt)>new Date(analysisAt);
   }
-  const kind=artifactKinds[folderId]?.[0];
-  const artifact=kind?(state.project?.artifacts||[]).find(a=>a.kind===kind):null;
   if(!artifact)return false;
   return new Date(briefAt)>new Date(artifact.updated_at);
 }
@@ -47,7 +48,7 @@ function staleNotice(folderId){
   if(!downstreamStale(folderId))return"";
   const regenLabel=STALE_REGENERATE_LABEL[folderId];
   const action=regenLabel?`<button class="button" data-regenerate-stale="${folderId}">🔄 ${regenLabel}</button>`:"";
-  const note=folderId==="review"?"Project Brief 在这份记录生成之后又改过，建议人工核对结论是否仍然成立，不建议自动重跑覆盖已写的审核意见。":"Project Brief 在这份内容生成之后又改过，以下内容可能基于旧版本。";
+  const note=(folderId==="review"||folderId==="delivery")?"最新结构化分析已更新，这份内容仍基于旧分析。重新生成前会要求确认，避免覆盖人工修改。":"Project Brief 在这份内容生成之后又改过，以下内容可能基于旧版本。";
   return `<div class="notice warn"><strong>⚠️ 可能已过期</strong><p>${note}</p>${action}</div>`;
 }
 function runtimePlan(path){
@@ -55,6 +56,7 @@ function runtimePlan(path){
   if(path.endsWith("/questionnaire"))return["读取已确认 Brief","检查研究目标与角色","组织研究阶段","生成开放问题与追问","检查覆盖与非引导性","准备写入问卷"];
   if(path.endsWith("/analyze"))return["读取研究原始资料","提取可追溯 Evidence","聚合 Findings","形成 Insights 与限制","准备结构化结果"];
   if(path.endsWith("/artifacts/revise"))return["读取当前文档","解析修改要求","保持证据边界","重写相关章节","准备写回文档"];
+  if(path.endsWith("/chat"))return["读取当前项目资料","核对可引用来源","形成带边界的回答"];
   return null;
 }
 function questionnaireGapId(text){
@@ -79,11 +81,17 @@ function runtimeHtml(){if(!state.runtime)return '<div class="runtime-empty">等�
 function updateRuntimeView(){const el=$("#runtime-trace");if(el){el.innerHTML=runtimeHtml();el.scrollTop=el.scrollHeight}}
 function startRuntime(steps){clearInterval(state.runtimeTimer);state.runtime={steps,current:0,status:"运行中"};updateRuntimeView();state.runtimeTimer=setInterval(()=>{state.runtime.current=Math.min(state.runtime.current+1,state.runtime.steps.length-1);updateRuntimeView()},1200)}
 function finishRuntime(ok,message){clearInterval(state.runtimeTimer);if(!state.runtime)return;state.runtime.current=ok?state.runtime.steps.length:state.runtime.current;state.runtime.status=ok?"完成":`失败 · ${message||"未知原因"}`;updateRuntimeView()}
-async function api(path,options={}){const plan=options.method==="POST"?runtimePlan(path):null;if(plan)startRuntime(plan);try{const r=await fetch(path,{headers:{"Content-Type":"application/json"},...options});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error?.message||d.error||`HTTP ${r.status}`);if(plan)finishRuntime(true);return d}catch(error){if(plan)finishRuntime(false,error.message);throw error}}
+async function api(path,options={}){const plan=options.method==="POST"?runtimePlan(path):null;if(plan)startRuntime(plan);try{const r=await fetch(path,{headers:{"Content-Type":"application/json"},...options});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error?.message||d.error||`HTTP ${r.status}`);if(plan)finishRuntime(true);return d}catch(error){const message=error instanceof TypeError&&/failed to fetch/i.test(error.message)?"本地服务连接中断，请稍后重试；本次操作未自动重试，以避免重复保存。":error.message||"请求失败";if(plan)finishRuntime(false,message);throw new Error(message)}}
 function toast(t){const n=document.createElement("div");n.className="notice";n.textContent=t;$("#toast-region").append(n);setTimeout(()=>n.remove(),3600)}
-function statusOf(p){if(p.latest_analysis)return["Review","已有分析，等待人工审核"];if(p.latest_questionnaire)return["Plan","问卷草案已生成"];const answered=(String(p.project_notes||"").match(/用户回答：/g)||[]).length;if(answered)return["Clarify",`已保存 ${answered} 项问卷前回答`];if((p.transcript_count||0)>0)return["Sources","资料已加入，等待整理"];return["Brief","项目简报待完善"]}
+function statusOf(p){if(p.latest_analysis?.agent_mode==="offline_preview")return["Sources","离线预览结果，需用 Live AI 重新生成"];if(p.latest_analysis)return["Review","已有分析，等待人工审核"];if(p.latest_questionnaire)return["Plan","问卷草案已生成"];const answered=(String(p.project_notes||"").match(/用户回答：/g)||[]).length;if(answered)return["Clarify",`已保存 ${answered} 项问卷前回答`];if((p.transcript_count||0)>0)return["Sources","资料已加入，等待整理"];return["Brief","项目简报待完善"]}
 async function loadProjects(){const d=await api("/api/projects");state.projects=d.projects||[]}
-async function openProject(id,folder="brief"){const switching=state.project?.id!==id;state.project=await api(`/api/projects/${id}`);if(switching)restoreMessages(id);state.view="workspace";state.folder=folder;state.documentMode="preview";state.editingQuestionIndex=null;selectArtifact();render()}
+async function loadConnection(){state.connection=await api("/api/health")}
+function connectionStatus(){
+  if(!state.connection)return '<span class="connection-status pending">● 正在检查 AI 连接</span>';
+  const live=state.connection.research_agent_mode==="live_ai";
+  return `<span class="connection-status ${live?"live":"offline"}">● ${live?`Live AI · ${esc(state.connection.research_agent_model||state.connection.model||"已连接")}`:"Offline preview · 未配置 API"}</span>`;
+}
+async function openProject(id,folder="brief"){const switching=state.project?.id!==id;state.project=await api(`/api/projects/${id}`);if(switching)restoreMessages(id,state.project.chat_messages);state.view="workspace";state.folder=folder;state.documentMode="preview";state.editingQuestionIndex=null;selectArtifact();render()}
 function selectArtifact(){const key=artifactKinds[state.folder]?.[0];state.artifact=key?(state.project?.artifacts||[]).find(a=>a.kind===key)||null:null}
 function inlineMarkdown(value){return esc(value).replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/`([^`]+)`/g,"<code>$1</code>")}
 function markdownToHtml(markdown){
@@ -149,7 +157,7 @@ function questionnaireView(content){
     return `<div class="question-card">
       <div class="question-card-head"><strong>${esc(block.number)}. ${esc(block.title)}</strong>${editing?"":`<button class="button text" data-edit-question="${index}">✏️ 编辑</button>`}</div>
       ${editing
-        ?`<textarea class="markdown-editor question-editor" id="question-edit-${index}">${esc(body)}</textarea><div class="doc-actions"><span></span><div><button class="button text" data-cancel-question="${index}">取消</button><button class="button primary" data-save-question="${index}">保存这道题</button></div></div>`
+        ?`<textarea class="markdown-editor question-editor" id="question-edit-${index}">${esc(body)}</textarea><div class="question-ai-panel" id="question-ai-panel-${index}" hidden></div><div class="doc-actions"><span>AI 只会把建议填入上面的编辑框，不会自动保存。</span><div><button class="button text" data-ai-question="${index}">✨ AI 辅助修改</button><button class="button text" data-cancel-question="${index}">取消</button><button class="button primary" data-save-question="${index}">保存这道题</button></div></div>`
         :`<div class="question-card-body">${markdownToHtml(body)}</div>`}
     </div>`;
   }).join("");
@@ -234,8 +242,8 @@ function handleSelectionChange(){
   const rect=range.getBoundingClientRect();
   if(!rect||(rect.width===0&&rect.height===0)){toolbar.hidden=true;return;}
   toolbar.hidden=false;
-  toolbar.style.top=`${window.scrollY+rect.top-42}px`;
-  toolbar.style.left=`${window.scrollX+rect.left}px`;
+  toolbar.style.top=`${Math.max(8,rect.top-42)}px`;
+  toolbar.style.left=`${Math.max(8,rect.left)}px`;
   toolbar.innerHTML=`<button type="button" class="selection-toolbar-btn" data-open-selection-prompt>✨ 用 AI 改这段</button>`;
   toolbar.querySelector("[data-open-selection-prompt]").addEventListener("click",()=>openSelectionPromptBox(text,range));
 }
@@ -254,7 +262,7 @@ async function submitSelectionPrompt(text,range,toolbar){
   submitBtn.disabled=true;submitBtn.textContent="生成中…";
   try{
     const [kind,title]=artifactKinds[state.folder]||["draft","草稿"];
-    const result=await api(`/api/projects/${state.project.id}/artifacts/revise`,{method:"POST",body:JSON.stringify({kind,title,content:text,instruction})});
+    const result=await api(`/api/projects/${state.project.id}/artifacts/suggest`,{method:"POST",body:JSON.stringify({kind,title,content:text,instruction})});
     insertInlineSuggestion(range,text,result.revised_content);
   }catch(error){
     toast(`生成失败：${error.message}`);
@@ -295,6 +303,28 @@ async function acceptInlineSuggestion(mark,suggestion,originalText,revisedText){
   mark.replaceWith(document.createTextNode(revisedText));
   await saveArtifact(updated);
 }
+function openQuestionAiPanel(index){
+  const panel=$(`#question-ai-panel-${index}`);
+  if(!panel)return;
+  panel.hidden=false;
+  panel.innerHTML=`<label for="question-ai-instruction-${index}"><strong>让 AI 怎么改这道题？</strong></label><textarea id="question-ai-instruction-${index}" class="selection-prompt-input" placeholder="例如：改得更口语化；删掉可能引导受访者的措辞；把问题收窄到一个具体场景"></textarea><div class="selection-prompt-actions"><button type="button" class="button text" data-cancel-ai-question="${index}">取消</button><button type="button" class="button primary" data-submit-ai-question="${index}">生成建议</button></div>`;
+  $(`#question-ai-instruction-${index}`)?.focus();
+}
+async function applyQuestionAiSuggestion(index){
+  const textarea=$(`#question-edit-${index}`),instruction=$(`#question-ai-instruction-${index}`)?.value.trim(),button=$(`[data-submit-ai-question="${index}"]`);
+  if(!textarea||!instruction)return;
+  if(button){button.disabled=true;button.textContent="生成中…";}
+  try{
+    const [kind,title]=artifactKinds[state.folder]||["research_plan","Research Plan.md"];
+    const original=textarea.value;
+    const result=await api(`/api/projects/${state.project.id}/artifacts/suggest`,{method:"POST",body:JSON.stringify({kind,title,content:original,instruction})});
+    const panel=$(`#question-ai-panel-${index}`);
+    if(!panel)return;
+    panel.innerHTML=`<div class="question-ai-diff"><div><strong>原文</strong><pre class="question-ai-original">${esc(original)}</pre></div><div><strong>AI 建议</strong><pre class="question-ai-suggested">${esc(result.revised_content)}</pre></div></div><p class="question-ai-note">采用后只会替换编辑框内容；仍需点击“保存这道题”才会写入项目。</p><div class="selection-prompt-actions"><button type="button" class="button text" data-reject-ai-suggestion>✕ 忽略</button><button type="button" class="button primary" data-accept-ai-suggestion>✓ 采用</button></div>`;
+    panel.querySelector("[data-accept-ai-suggestion]").addEventListener("click",()=>{textarea.value=result.revised_content;panel.replaceChildren();panel.hidden=true;toast("已采用 AI 建议；请检查后点击“保存这道题”。");});
+    panel.querySelector("[data-reject-ai-suggestion]").addEventListener("click",()=>{panel.replaceChildren();panel.hidden=true;toast("已忽略 AI 建议，原文未改动。");});
+  }catch(error){toast(`AI 建议生成失败：${error.message}`);if(button){button.disabled=false;button.textContent="生成建议";}}
+}
 async function saveQuestionBlockEdit(index){
   const parsed=parseQuestionBlocks(state.artifact?.content||"");
   if(!parsed||!parsed.blocks[index])return;
@@ -328,7 +358,7 @@ function messageHtml(message){
   const card=artifactName?`<button class="chat-artifact" data-open-artifact="${esc(artifactName.trim())}"><span class="chat-artifact-icon">DOC</span><span><strong>${esc(artifactName.trim())}</strong><small>已保存到项目产物 · 点击打开</small></span><span>→</span></button>`:"";
   return `<div class="message ${message.role}"><div>${body}</div>${card}</div>`;
 }
-function header(){return `<img class="supergraphic" src="/assets/supergraphic-responsive.svg" alt="" aria-hidden="true"/><header class="topbar"><a class="brand" href="#" id="home-link" aria-label="返回项目列表"><img class="bosch-logo" src="/assets/bosch-logo.svg" alt="Bosch"/><div><strong>UXGS Research Studio</strong><small>Evidence-first Research Agent</small></div></a>${state.view==="workspace"?`<div class="project-head"><span>${esc(state.project?.name)}</span><button class="button" id="back-projects">所有项目</button></div>`:"<span>Project Portfolio</span>"}</header>`}
+function header(){return `<img class="supergraphic" src="/assets/supergraphic-responsive.svg" alt="" aria-hidden="true"/><header class="topbar"><a class="brand" href="#" id="home-link" aria-label="返回项目列表"><img class="bosch-logo" src="/assets/bosch-logo.svg" alt="Bosch"/><div><strong>UXGS Research Studio</strong><small>Evidence-first Research Agent</small></div></a>${state.view==="workspace"?`<div class="project-head">${connectionStatus()}<span>${esc(state.project?.name)}</span><button class="button" id="back-projects">所有项目</button></div>`:`<div class="project-head">${connectionStatus()}<span>Project Portfolio</span></div>`}</header>`}
 function portfolio(){return `<div class="wizard">${header()}<main class="portfolio"><div class="portfolio-title"><div><p class="eyebrow">Research Agent</p><h1>研究项目</h1><p>每个项目拥有独立资料、Artifact、审核状态和交付成果。</p></div><button class="button primary" id="new-project">新建项目</button></div><section class="project-grid">${state.projects.map(p=>{const s=statusOf(p);return `<article class="project-card"><button class="project-open" data-project="${p.id}" aria-label="打开项目 ${esc(p.name)}"><div class="project-card-top"><span class="status-label">${s[0]}</span><span>→</span></div><h2>${esc(p.name)}</h2><p>${esc(p.research_goal)}</p><div class="project-progress"><span>${s[1]}</span><strong>${p.transcript_count||0} 个来源</strong></div></button><div class="project-card-actions"><small>${esc(p.id)}</small><button class="button danger" data-delete-project="${p.id}" data-project-name="${esc(p.name)}">删除项目</button></div></article>`}).join("")||'<div class="empty">还没有项目。新建一个项目开始。</div>'}</section></main></div>`}
 function newProject(){return `<div class="wizard">${header()}<main class="new-project-page"><p class="eyebrow">New project</p><h1>先告诉 Research Agent 你要研究什么</h1><p>这不是必须一次填完的表单。只写你确定的内容，其余信息进入项目后通过对话和资料逐步补齐。</p><form class="card" id="new-project-form"><div class="field"><label>项目名称</label><input name="name" required/></div><div class="field"><label>目前确定的研究目标</label><textarea name="goal" required></textarea></div><div class="field"><label>目前最想回答的问题</label><textarea name="question" required></textarea></div><div class="actions"><button class="button" id="cancel-new" type="button">取消</button><button class="button primary" type="submit">创建项目并开始对话</button></div></form></main></div>`}
 function sourceCard(f){const category=f.segment||"unclassified";return `<article class="source-item"><div><strong>${esc(f.file_name)}</strong><small>${category==="project_context"?"项目背景":category==="research_result"?"调研原始资料":"待分类，不参与 AI 运行"}</small></div><div class="file-actions"><select data-classify="${f.id}" aria-label="修改 ${esc(f.file_name)} 的分类"><option value="unclassified" ${!f.segment||category==="unclassified"?"selected":""}>待分类</option><option value="project_context" ${category==="project_context"?"selected":""}>项目背景</option><option value="research_result" ${category==="research_result"?"selected":""}>调研原始资料</option></select><button class="icon-button danger" data-delete="${f.id}" aria-label="删除 ${esc(f.file_name)}">删除</button></div></article>`}
@@ -342,6 +372,12 @@ function documentPane(){
   if(state.folder==="evidence"){
     return `<div class="document-pane"><div class="doc-heading"><div><p class="eyebrow">Project output</p><h1>证据与分析</h1><p>关键发现为主视图；点开每条结论查看支撑证据、Theme 归属与 Judge 判定。</p></div></div>${staleNotice("evidence")}<div class="notice"><strong>结构化结果来源边界</strong>这里只分析"问卷答案与原始数据"，不会把 PRD、Charter 等项目背景当成用户回答。</div>${reportView(state.project.latest_analysis)}</div>`;
   }
+  if(state.folder==="review"&&!state.artifact){
+    const analysis=state.project?.latest_analysis;
+    const ready=Boolean(analysis&&analysis.agent_mode!=="offline_preview");
+    const summary=ready?`本次分析已产生 ${analysis.evidence?.length||0} 条 Evidence、${analysis.findings?.length||0} 条 Finding 和 ${analysis.insights?.length||0} 条 Insight。生成后可逐条记录 Accept / Edit / Reject，也可选中文字使用 AI 提出改写建议。`:analysis?"当前只有历史离线预览，不能进入人工审核。请回到“证据与分析”用 Live AI 重新生成。":"尚未有可审核的分析结果。请先在“问卷答案与原始数据”上传材料并生成结构化结果。";
+    return `<div class="document-pane"><div class="doc-heading"><div><p class="eyebrow">Project output</p><h1>Human Review.md</h1><p>人工审核不会修改原始 Evidence；所有接受、编辑与退回理由都会单独保存。</p></div></div><div class="empty review-empty"><h2>${ready?"准备生成审核清单":"尚无审核对象"}</h2><p>${esc(summary)}</p>${ready?'<button class="button primary" id="generate-review-artifact">生成审核清单</button>':""}</div></div>`;
+  }
   const meta=artifactKinds[state.folder],content=state.artifact?.content||defaultDocument(),editing=state.documentMode==="edit";
   const usesQuestionCards=state.folder==="plan"&&!editing&&parseQuestionBlocks(content);
   const bodyHtml=editing?`<textarea class="markdown-editor" id="artifact-editor" aria-label="编辑 ${esc(meta[1])}">${esc(content)}</textarea>`
@@ -351,7 +387,7 @@ function documentPane(){
   return `<div class="document-pane"><div class="doc-heading"><div><p class="eyebrow">Project output</p><h1>${esc(meta[1])}</h1><p>${usesQuestionCards?"每道题可单独编辑；改动只影响这一道题，不会动其他题目。":"这里展示可审阅的结构化产物；Markdown 只作为底层可移植格式。"}</p></div><div class="doc-heading-actions"><span class="status-label">${esc(state.artifact?.status||"Draft")}</span><button class="button" id="toggle-document-mode">${editing?"结构化预览":"编辑整篇源文件"}</button></div></div>${editing?"":staleNotice(state.folder)}${bodyHtml}<div class="doc-actions"><span>${editing?"Markdown 源文件编辑模式":"结构化阅读模式 · 自动保存为项目 Artifact"}</span><div>${editing?'<button class="button primary" id="save-artifact">保存并预览</button>':""}</div></div></div>`;
 }
 function chatPane(){const prompts=state.folder==="context"?["整理背景资料清单","根据背景资料总结项目","检查还缺哪些背景"]:state.folder==="brief"?["根据背景资料总结项目","检查 Brief 还缺什么","把我的回答写入 Brief"]:state.folder==="plan"?["检查是否可以生成研究计划","先生成问卷大纲","根据确认的大纲生成具体问题"]:state.folder==="responses"?["检查问卷答案是否完整","生成结构化结果","列出缺失回答和数据问题"]:state.folder==="evidence"?["从问卷答案提取 Evidence","标记冲突与证据缺口","生成结构化结果"]:state.folder==="review"?["生成审核清单","总结需要人工确认的内容","把审核意见写入文档"]:state.folder==="delivery"?["生成 One-page Delivery","生成 Evidence Pack 目录","检查交付还缺什么"]:["总结当前文件夹","检查下一道 Gate"];
-return `<aside class="chat-pane"><div class="chat-title"><span class="ai-dot">AI</span><div><strong>Research Agent</strong><small>生成的结果会作为项目产物保存</small></div></div><section class="runtime-trace" id="runtime-trace" aria-live="polite">${runtimeHtml()}</section><div class="messages">${state.messages.map(messageHtml).join("")||'<div class="message"><div>我会把对话结果保存成左侧可打开的项目产物。缺失信息会标成 TBC，不会猜测。</div></div>'}</div><div class="prompt-chips">${prompts.map(x=>`<button data-prompt="${esc(x)}">${esc(x)}</button>`).join("")}</div><div class="composer"><textarea id="chat-input" placeholder="说你想整理、检查或生成什么…"></textarea><div><label class="attach"><input id="chat-files" type="file" multiple accept=".txt,.md,.csv,.json,.docx,.pptx,.xlsx,.pdf,.png,.jpg,.jpeg,.webp,.gif,.mp3,.mp4,.mpeg,.mpga,.m4a,.wav,.webm" hidden/>＋ 添加资料</label><button class="button primary" id="send-chat">发送</button></div></div></aside>`}
+return `<aside class="chat-pane"><div class="chat-title"><span class="ai-dot">AI</span><div><strong>Research Agent</strong><small>可基于当前项目资料回答；生成动作才会创建产物</small></div></div><section class="runtime-trace" id="runtime-trace" aria-live="polite">${runtimeHtml()}</section><div class="messages">${state.messages.map(messageHtml).join("")||'<div class="message"><div>可以直接问当前项目的问题。我只读取这个项目的资料并标出来源；只有明确要求整理、生成或修改时才会创建产物。</div></div>'}</div><div class="prompt-chips">${["这个项目目前已确认什么？","目前还缺哪些关键资料？",...prompts].map(x=>`<button data-prompt="${esc(x)}">${esc(x)}</button>`).join("")}</div><div class="composer"><textarea id="chat-input" placeholder="问当前项目的问题，或说要整理、检查、生成什么…"></textarea><div><label class="attach"><input id="chat-files" type="file" multiple accept=".txt,.md,.csv,.json,.docx,.pptx,.xlsx,.pdf,.png,.jpg,.jpeg,.webp,.gif,.mp3,.mp4,.mpeg,.mpga,.m4a,.wav,.webm" hidden/>＋ 添加资料</label><button class="button primary" id="send-chat">发送</button></div></div></aside>`}
 function workspace(){return `<div class="wizard">${header()}<div class="workspace-shell"><nav class="folder-nav" aria-label="项目产物空间"><div class="project-summary"><small>PROJECT OUTPUTS</small><strong>${esc(state.project.name)}</strong><span>${statusOf(state.project)[1]}</span></div><div class="tree-label">产物与资料</div>${folderTree()}</nav>${state.folder==="context"?sourcesPane("project_context"):state.folder==="responses"?sourcesPane("research_result"):documentPane()}${chatPane()}</div></div>`}
 function render(){
   persistMessages();
@@ -408,10 +444,12 @@ function reportView(analysis){
   }
   const insights=analysis.insights||[];
   const gaps=[...(analysis.gaps||[]),...(analysis.limitations||[])];
+  const staleOffline=analysis.agent_mode==="offline_preview"&&state.connection?.research_agent_mode==="live_ai";
   return `<article class="artifact-page report-view">
     <p class="eyebrow">Research Report</p>
     <h1>${esc(state.project.name)} · 研究结论</h1>
     <p class="report-meta">状态：${esc(analysis.review_status||"AI Draft")} · 模式：${esc(analysis.agent_mode||"—")}${analysis.model?` · ${esc(analysis.model)}`:""}</p>
+    ${staleOffline?'<div class="notice warn"><strong>这是历史离线预览，不是当前 Live AI 分析。</strong><p>当前已连接 Live AI；请重新生成，新的结果才可进入人工审核。</p><button class="button primary" data-regenerate-stale="evidence">用 Live AI 重新生成</button></div>':""}
     <h2>Executive Summary</h2>
     <p>${esc(analysis.executive_summary||"暂无总结")}</p>
     <h2>关键发现（${insights.length}）</h2>
@@ -499,11 +537,27 @@ async function reviseCurrentArtifact(text){
   return result;
 }
 async function generateDeliveryArtifact(){const a=state.project.latest_analysis;if(!a)throw new Error("请先生成并审核结构化分析");const md=`# Structured Delivery\n\n> Status: AI-generated draft / Human approval required\n\n## Executive Summary\n${a.executive_summary||"TBC - 需要基于已审核 Finding 完成"}\n\n## Key Findings\n${(a.findings||[]).map(f=>`### ${f.title}\n${f.summary||f.description||""}\n\nEvidence: ${(f.evidence_ids||[]).join("、")}`).join("\n\n")||"- 无"}\n\n## Recommendations / Insights\n${(a.insights||[]).map(i=>`- ${i.title}: ${i.statement||i.summary||""}`).join("\n")||"- 无"}\n\n## Evidence Pack\n- Evidence count: ${(a.evidence||[]).length}\n- Review status: ${a.review_status||"TBC"}\n\n## Limitations\n${(a.limitations||[]).map(x=>`- ${x}`).join("\n")||"- TBC"}\n`;state.folder="delivery";selectArtifact();await saveArtifact(md)}
-const baseRunChat=runChat;
+const baseGenerateReviewArtifact=generateReviewArtifact;
+generateReviewArtifact=async function(){
+  const existing=(state.project?.artifacts||[]).find(item=>item.kind==="human_review");
+  if(existing?.status==="human_edited"&&!confirm(`“${existing.title}”包含人工修改。重新生成会覆盖这份审核清单，是否继续？`))throw new Error("已取消重新生成，现有审核清单保持不变。");
+  return baseGenerateReviewArtifact();
+};
+const baseGenerateDeliveryArtifact=generateDeliveryArtifact;
+generateDeliveryArtifact=async function(){
+  const analysis=state.project?.latest_analysis;
+  const review=(state.project?.artifacts||[]).find(item=>item.kind==="human_review");
+  const existing=(state.project?.artifacts||[]).find(item=>item.kind==="delivery");
+  if(!analysis)throw new Error("请先生成结构化分析");
+  if(!review||new Date(review.updated_at)<new Date(analysis.created_at))throw new Error("请先基于最新分析生成并完成 Human Review；不会用旧审核记录生成交付。");
+  if(existing?.status==="human_edited"&&!confirm(`“${existing.title}”包含人工修改。重新生成会覆盖这份交付物，是否继续？`))throw new Error("已取消重新生成，现有交付物保持不变。");
+  return baseGenerateDeliveryArtifact();
+};
 runChat=async function(text){
-  const isRevisionRequest=/修改|改成|调整|补充|删除|不要|不应|应该|希望|依然|仍然|不够|更[多好]|需要|root cause|措辞|重写|审核|意见/i.test(text);
+  const isRevisionRequest=/^\s*(?:请(?:帮我)?(?:修改|改成|调整|补充|删除|重写|改写)|修改|改成|调整|补充|删除|重写|改写|把.+(?:改成|修改|写入))/i.test(text);
   const isControlledGeneration=/^(根据背景资料总结项目|检查 Brief 还缺什么|先生成问卷大纲|根据确认的大纲生成具体问题|检查是否可以生成研究计划|生成结构化结果|从问卷答案提取 Evidence|生成 One-page Delivery|生成 Evidence Pack 目录|检查交付还缺什么)$/i.test(text.trim());
-  if(/背景资料.*总结|总结项目|总结.*背景/.test(text)){
+  const briefSummaryAction=(state.folder==="brief"&&text.trim()==="检查 Brief 还缺什么")||(state.folder==="context"&&["整理背景资料清单","检查还缺哪些背景"].includes(text.trim()));
+  if(/背景资料.*总结|总结项目|总结.*背景/.test(text)||briefSummaryAction){
     state.messages.push({role:"user",text},{role:"assistant",text:"正在整理已确认信息、识别缺口，并为每个缺口生成问卷前工作建议…"});render();
     const result=await summarizeWithRecommendations();
     state.messages.push({role:"assistant",text:`运行完成\n\n已更新：Brief.md\n新增：问卷生成前的 AI 建议\n建议数量：${(result.suggested_information||[]).length}\n\n这些建议均标记为“待确认”，不会被当成项目事实。你可以直接告诉我哪条接受、修改或否决。`});render();return;
@@ -511,7 +565,7 @@ runChat=async function(text){
   if(state.folder==="plan"&&state.pendingQuestionnaireGap){
     await saveQuestionnaireClarification(text);return;
   }
-  if(state.folder==="plan"&&isControlledGeneration&&/问卷|研究计划/.test(text)){
+  if(state.folder==="plan"&&isControlledGeneration&&(/问卷|研究计划/.test(text)||text.trim()==="根据确认的大纲生成具体问题")){
     state.messages.push({role:"user",text},{role:"assistant",text:"正在执行问卷前 Research Readiness Check…"});render();
     try{if(!await questionnaireGate())return}catch(error){state.messages.push({role:"assistant",text:`准备度检查未完成：${error.message}\n\n请稍后点击同一按钮重试；已经保存的 Brief 和回答不会丢失。`});render();return}
     state.messages.push({role:"assistant",text:"准备度通过。正在从 Evidence Needed 生成主问题、Probe Tree 与完成标准…"});render();
@@ -522,6 +576,11 @@ runChat=async function(text){
   if((state.folder==="responses"||state.folder==="evidence")&&/结构化|Evidence|Analysis|分析|提取/.test(text)){
     state.messages.push({role:"user",text},{role:"assistant",text:"正在从“问卷答案与原始数据”生成结构化 Evidence 与 Analysis…"});render();
     await analyzeResponses();state.messages.push({role:"assistant",text:`运行完成\n已更新："证据与分析"报告（${(state.project.latest_analysis?.insights||[]).length} 条 Insight）\n输入边界：仅问卷答案与 research_result 来源\n下一步：进入人工审核`});render();return;
+  }
+  if(state.folder==="review"&&text.trim()==="生成审核清单"){
+    state.messages.push({role:"user",text},{role:"assistant",text:"正在把当前 Evidence、Finding 和 Insight 写入审核清单…"});render();
+    try{await generateReviewArtifact();state.messages.push({role:"assistant",text:"审核清单已生成。现在可以逐条记录 Accept / Edit / Reject，也可以选中一段文字后使用“✨ 用 AI 改这段”。"});render()}catch(error){state.messages.push({role:"assistant",text:`审核清单未生成：${error.message}`});render()}
+    return;
   }
   if(state.folder==="review"||(state.artifact&&(isRevisionRequest||!isControlledGeneration))){
     state.messages.push({role:"user",text},{role:"assistant",text:"正在按你的意见修改当前文档，并保留审核记录…"});render();
@@ -540,10 +599,42 @@ runChat=async function(text){
     state.messages.push({role:"user",text},{role:"assistant",text:"正在生成 Delivery.md…"});render();
     await generateDeliveryArtifact();state.messages.push({role:"assistant",text:"运行完成\n生成了：Delivery.md\n状态：AI-generated draft\n未生成：Approved 交付\n原因：尚需 Human Review"});render();return;
   }
-  return baseRunChat(text);
+  const pending={role:"assistant",text:"正在读取当前项目资料，并核对可引用来源…"};
+  state.messages.push({role:"user",text},pending);render();
+  try{
+    const result=await api(`/api/projects/${state.project.id}/chat`,{method:"POST",body:JSON.stringify({question:text})});
+    const sources=(result.sources||[]).map(item=>item.label||item.source_id).join("、");
+    const limitations=(result.limitations||[]).map(item=>`- ${item}`).join("\n");
+    const actions=(result.suggested_actions||[]).map(item=>`- ${item}`).join("\n");
+    pending.text=`${result.answer||"当前项目资料未提供足够信息。"}${sources?`\n\n来源：${sources}`:"\n\n来源：当前项目资料未说明可引用依据"}${limitations?`\n\n资料边界：\n${limitations}`:""}${actions?`\n\n建议下一步：\n${actions}`:""}`;
+  }catch(error){pending.text=`暂时无法回答：${error.message}\n\n本次没有修改或生成项目文件。`}
+  render();
 };
 function bind(){$("#home-link")?.addEventListener("click",e=>{e.preventDefault();state.view="portfolio";render()});$("#back-projects")?.addEventListener("click",()=>{state.view="portfolio";render()});$("#new-project")?.addEventListener("click",()=>{state.view="new";render()});$("#cancel-new")?.addEventListener("click",()=>{state.view="portfolio";render()});$$('[data-project]').forEach(x=>x.addEventListener("click",()=>openProject(x.dataset.project)));$$('[data-folder]').forEach(x=>x.addEventListener("click",()=>{state.folder=x.dataset.folder;state.documentMode="preview";state.editingQuestionIndex=null;selectArtifact();render()}));$("#toggle-document-mode")?.addEventListener("click",()=>{state.documentMode=state.documentMode==="edit"?"preview":"edit";render()});$("#new-project-form")?.addEventListener("submit",async e=>{e.preventDefault();const d=new FormData(e.target);const p=await api("/api/projects",{method:"POST",body:JSON.stringify({name:d.get("name"),research_goal:d.get("goal"),research_questions:[d.get("question")],target_users:"",language:"zh-CN"})});await loadProjects();await openProject(p.id)});$("#save-artifact")?.addEventListener("click",async()=>{try{await saveArtifact($("#artifact-editor").value);state.documentMode="preview";render()}catch(e){toast(e.message)}});$("#generate-analysis")?.addEventListener("click",()=>analyzeResponses().catch(e=>toast(e.message)));$("#analyze-responses")?.addEventListener("click",()=>analyzeResponses().catch(e=>toast(e.message)));$("#upload-source")?.addEventListener("click",()=>{const files=[...$("#source-files").files];if(!files.length)return toast("请先选择文件");upload($("#upload-source").dataset.category,files).catch(e=>toast(e.message))});$$('[data-classify]').forEach(x=>x.addEventListener("change",async()=>{await api(`/api/projects/${state.project.id}/sources/${x.dataset.classify}`,{method:"POST",body:JSON.stringify({category:x.value})});await openProject(state.project.id,state.folder)}));$$('[data-delete]').forEach(x=>x.addEventListener("click",async()=>{if(!confirm(`${x.getAttribute("aria-label")}？此操作无法撤销。`))return;await api(`/api/projects/${state.project.id}/sources/${x.dataset.delete}`,{method:"DELETE"});await openProject(state.project.id,state.folder)}));$$('[data-prompt]').forEach(x=>x.addEventListener("click",()=>{$("#chat-input").value=x.dataset.prompt}));$("#send-chat")?.addEventListener("click",()=>{const t=$("#chat-input").value.trim();if(!t)return;runChat(t).catch(e=>toast(e.message))});$("#chat-files")?.addEventListener("change",e=>{const category=state.folder==="responses"?"research_result":"project_context";upload(category,[...e.target.files]).catch(x=>toast(x.message))});$$('[data-edit-question]').forEach(x=>x.addEventListener("click",()=>{state.editingQuestionIndex=Number(x.dataset.editQuestion);render()}));$$('[data-cancel-question]').forEach(x=>x.addEventListener("click",()=>{state.editingQuestionIndex=null;render()}));$$('[data-save-question]').forEach(x=>x.addEventListener("click",()=>saveQuestionBlockEdit(Number(x.dataset.saveQuestion)).catch(e=>toast(e.message))));$$('[data-regenerate-stale]').forEach(x=>x.addEventListener("click",()=>{const folder=x.dataset.regenerateStale;const action=folder==="plan"?regeneratePlan:folder==="evidence"?analyzeResponses:folder==="delivery"?generateDeliveryArtifact:null;if(action)action().catch(e=>toast(e.message))}));$("#save-gap-form")?.addEventListener("click",()=>saveGapForm().catch(e=>toast(e.message)))}
-document.addEventListener("mouseup",()=>{setTimeout(handleSelectionChange,0)});
+document.addEventListener("click",event=>{
+  if(event.target.closest("#generate-review-artifact"))generateReviewArtifact().catch(error=>toast(`审核清单未生成：${error.message}`));
+  const openButton=event.target.closest("[data-ai-question]");
+  if(openButton){openQuestionAiPanel(Number(openButton.dataset.aiQuestion));return;}
+  const cancelButton=event.target.closest("[data-cancel-ai-question]");
+  if(cancelButton){const panel=$(`#question-ai-panel-${cancelButton.dataset.cancelAiQuestion}`);if(panel){panel.replaceChildren();panel.hidden=true;}return;}
+  const submitButton=event.target.closest("[data-submit-ai-question]");
+  if(submitButton)applyQuestionAiSuggestion(Number(submitButton.dataset.submitAiQuestion));
+});
+document.addEventListener("click",event=>{
+  const button=event.target.closest("[data-regenerate-stale]");
+  if(!button)return;
+  const kind=artifactKinds[button.dataset.regenerateStale]?.[0];
+  const artifact=(state.project?.artifacts||[]).find(item=>item.kind===kind);
+  if(artifact?.status==="human_edited"&&!confirm(`“${artifact.title}”包含人工修改。重新生成会覆盖这份内容，是否继续？`)){
+    event.preventDefault();event.stopImmediatePropagation();
+  }
+},true);
+document.addEventListener("mouseup",event=>{
+  // Clicking the floating button moves focus to its prompt textarea.  Do not
+  // re-check the now-cleared document selection, or the prompt hides itself.
+  if(document.getElementById("selection-toolbar")?.contains(event.target))return;
+  setTimeout(handleSelectionChange,0);
+});
 document.addEventListener("mousedown",event=>{
   const toolbar=document.getElementById("selection-toolbar");
   if(toolbar&&!toolbar.hidden&&!toolbar.contains(event.target))toolbar.hidden=true;
@@ -564,4 +655,4 @@ document.addEventListener("click",async event=>{
     await loadProjects();render();toast(`项目“${name}”已删除`);
   }catch(error){toast(`删除失败：${error.message}`)}
 });
-loadProjects().then(render).catch(e=>{$("#app").innerHTML=`<div class="empty">工作台加载失败：${esc(e.message)}</div>`});
+Promise.all([loadProjects(),loadConnection()]).then(render).catch(e=>{$("#app").innerHTML=`<div class="empty">工作台加载失败：${esc(e.message)}</div>`});

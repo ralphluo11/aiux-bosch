@@ -21,31 +21,30 @@ class FakeResponsesHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         length = int(self.headers["Content-Length"])
         type(self).request_payload = json.loads(self.rfile.read(length))
-        output = {
-            "output": [
-                {
-                    "type": "message",
-                    "content": [
-                        {
-                            "type": "output_text",
-                            "text": json.dumps(
-                                {
-                                    "action": "probe",
-                                    "proposed_question": "装满食物时，这种情况有什么变化？",
-                                    "probe_intent": "补足装载状态",
-                                    "detected_signal": "后面冻",
-                                    "information_gap": "装载状态",
-                                    "candidate_hypotheses": ["食物遮挡影响冷气循环"],
-                                    "grounded_card_ids": ["card_1"],
-                                    "rationale": "尚未说明装载情境。",
-                                },
-                                ensure_ascii=False,
-                            ),
-                        }
-                    ],
-                }
-            ]
+        decision = {
+            "action": "probe",
+            "proposed_question": "装满食物时，这种情况有什么变化？",
+            "probe_intent": "补足装载状态",
+            "detected_signal": "后面冻",
+            "information_gap": "装载状态",
+            "candidate_hypotheses": ["食物遮挡影响冷气循环"],
+            "grounded_card_ids": ["card_1"],
+            "rationale": "尚未说明装载情境。",
         }
+        output = (
+            {"choices": [{"message": {"content": json.dumps(decision, ensure_ascii=False)}}]}
+            if self.path == "/chat/completions"
+            else {
+                "output": [
+                    {
+                        "type": "message",
+                        "content": [
+                            {"type": "output_text", "text": json.dumps(decision, ensure_ascii=False)}
+                        ],
+                    }
+                ]
+            }
+        )
         data = json.dumps(output, ensure_ascii=False).encode("utf-8")
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
@@ -120,6 +119,40 @@ class ResponsesAdapterTests(unittest.TestCase):
         self.assertFalse(payload["store"])
         self.assertEqual(payload["text"]["format"]["type"], "json_schema")
         self.assertTrue(payload["text"]["format"]["strict"])
+
+    def test_chat_completions_adapter_uses_chat_schema(self):
+        brief = ResearchBrief(
+            goal="理解温度体验",
+            target_user="家庭用户",
+            research_questions=["何时发生？"],
+            product_scope="refrigerator",
+        )
+        guide = GuideQuestion(
+            text="遇到过什么问题？",
+            intent="发现问题",
+            research_question_id="rq_1",
+            order=1,
+        )
+        context = AnswerContext(
+            brief=brief,
+            guide_question=guide,
+            session=InterviewSession(study_id=brief.id),
+            answer="后面的菜冻住了。",
+        )
+        generator = OpenAIResponsesProbeGenerator(
+            api_key="test-key",
+            model="test-model",
+            base_url=self.base_url,
+            api_style="chat_completions",
+        )
+
+        generated = generator.generate(context, [], [])
+
+        self.assertEqual(generated.action, "probe")
+        payload = FakeResponsesHandler.request_payload
+        self.assertEqual(payload["messages"][0]["role"], "system")
+        self.assertEqual(payload["response_format"]["type"], "json_schema")
+        self.assertTrue(payload["response_format"]["json_schema"]["strict"])
 
 
 if __name__ == "__main__":

@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"hashchange\\\\|location.hash\\\\|addEventListener\\(\\\\\"load\\\\|DOMContentLoaded\\\\|^render\\(\\)\\\\|render\\(\\);$\" static/wizard.js)",
+      "Bash(node --check static/wizard.js)"
+    ]
+  }
+}
